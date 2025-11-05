@@ -5,8 +5,18 @@
   "main": "index.js",
   "private": true,
   "scripts": {
+    "lint": "eslint .",
     "start": "npx tsx --env-file=.env --watch  src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "lint-staged": {
+    "*.{js,ts,css,md}": [
+      "prettier --write",
+      "eslint --fix"
+    ],
+    "*.{md,mdx,json}": [
+      "prettier --write"
+    ]
   },
   "keywords": [],
   "author": "James Krayer <jameskrayer@yahoo.com>",
@@ -16,7 +26,12 @@
     "express": "5.1.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@types/express": "5.0.5",
-    "@types/node": "24.10.0"
+    "@types/node": "24.10.0",
+    "eslint": "8.57.1",
+    "globals": "^16.5.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.46.3"
   }
 }

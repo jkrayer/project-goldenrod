@@ -9,17 +9,15 @@
     "frontend"
   ],
   "scripts": {
+    "prepare": "husky",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "James Krayer <jameskrayer@yahoo.com>",
   "license": "MIT",
-  "dependencies": {
-    "@reduxjs/toolkit": "2.10.1",
-    "react-redux": "^9.2.0",
-    "react-router-dom": "^7.9.5"
-  },
   "devDependencies": {
-    "@types/react-router-dom": "5.3.3"
+    "husky": "9.1.7",
+    "lint-staged": "16.2.6",
+    "prettier": "3.6.2"
   }
 }
