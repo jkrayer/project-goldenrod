@@ -1,4 +1,11 @@
 import express, { type Request, type Response } from "express";
+import {
+  gameValidation,
+  userValidation,
+  type Game,
+  type User,
+} from "@project_goldenrod/shared";
+import { validate } from "./lib/validate.js";
 import controllers from "./controllers/index.js";
 
 // Create a new express application instance
@@ -16,11 +23,23 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 // Define a sample API endpoint
-app.post("/api/users/register", controllers.users.register);
+app.post(
+  "/api/users/register",
+  validate<User>(userValidation),
+  controllers.users.register,
+);
 
-app.post("/api/users/login", controllers.users.login);
+app.post(
+  "/api/users/login",
+  validate<User>(userValidation),
+  controllers.users.login,
+);
 
-app.post("/api/games/", controllers.games.create);
+app.post(
+  "/api/games/",
+  validate<Game>(gameValidation),
+  controllers.games.create,
+);
 
 app.get("/api/games/", controllers.games.getAll);
 

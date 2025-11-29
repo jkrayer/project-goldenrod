@@ -1,7 +1,6 @@
 import type { Request, Response } from "express";
 import { prisma } from "../../lib/prisma.js";
 import { isPrismaError } from "../../lib/isPrismaError.js";
-import { validateEmail, validateUsername } from "@project_goldenrod/shared";
 
 export const register = async (req: Request, res: Response) => {
   // get user data from request body
@@ -15,15 +14,15 @@ export const register = async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
-  if (!validateEmail(email)) {
-    return res.status(400).json({ error: "Invalid email format" });
-  }
+  // if (!validateEmail(email)) {
+  //   return res.status(400).json({ error: "Invalid email format" });
+  // }
 
-  if (!validateUsername(username)) {
-    return res
-      .status(400)
-      .json({ error: "Invalid username (3-20 alphanumeric characters)" });
-  }
+  // if (!validateUsername(username)) {
+  //   return res
+  //     .status(400)
+  //     .json({ error: "Invalid username (3-20 alphanumeric characters)" });
+  // }
 
   // add user to database
   try {

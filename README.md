@@ -82,3 +82,7 @@ PosgreSQL, Prisma
 #### jwt
 
 probably need a table for this.
+
+## To Do
+
+- Game Table should probably have name changed to a varChar(50)

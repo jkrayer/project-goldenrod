@@ -16,5 +16,8 @@
   "license": "MIT",
   "devDependencies": {
     "typescript": "5.9.3"
+  },
+  "dependencies": {
+    "yup": "1.7.1"
   }
 }
