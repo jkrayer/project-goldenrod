@@ -60,12 +60,10 @@ export const create = async (req: Request, res: Response) => {
     });
 
     // return success response
-    res.status(201).json({ data: newRoom });
+    return res.status(201).json({ data: newRoom });
   } catch (error) {
     console.error("Error creating room:", error);
 
     return res.status(500).json({ error: "Internal server error" });
   }
-
-  return res;
 };

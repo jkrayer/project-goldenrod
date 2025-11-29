@@ -4,69 +4,79 @@ import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 
 // Mock prisma before importing the controller
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockFindUnique = jest.fn<any>();
+const mockCreate = jest.fn<any>();
 
 jest.unstable_mockModule("../../lib/prisma.js", () => ({
   prisma: {
     games: {
-      findUnique: mockFindUnique,
+      create: mockCreate,
     },
   },
 }));
 
 // Import after mocking
-const { get } = await import("./get.js");
+const { create } = await import("./create.js");
 
 // Create a new express application instance
 const app = express();
-app.get("/api/games/:id", get);
+app.use(express.json()); // Add JSON body parser
+app.post("/api/games/", create);
 
-describe("GET /api/games/:id", () => {
+describe("POST /api/games/", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Suppress console.error during tests
     jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  it("should return 200 and game data when found", async () => {
+  it("should return 201 when a game is created", async () => {
     const mockGame = {
-      id: 1,
       name: "Test Game",
       description: "Test Description",
     };
 
-    mockFindUnique.mockResolvedValue(mockGame);
+    mockCreate.mockResolvedValue(mockGame);
 
     const response = await request(app)
-      .get("/api/games/1")
+      .post("/api/games/")
+      .send(mockGame)
       .expect("Content-Type", /json/)
-      .expect(200);
+      .expect(201);
 
     expect(response.body).toEqual({ data: mockGame });
-    expect(mockFindUnique).toHaveBeenCalledWith({
-      where: { id: 1 },
-    });
+    expect(mockCreate).toHaveBeenCalledWith({ data: mockGame });
   });
 
-  it("should return 404 when game not found", async () => {
-    mockFindUnique.mockResolvedValue(null);
+  it("should return 400 when request body is invalid", async () => {
+    const invalidGame = {
+      invalidField: "Invalid Data",
+    };
 
     const response = await request(app)
-      .get("/api/games/999")
+      .post("/api/games/")
+      .send(invalidGame)
       .expect("Content-Type", /json/)
-      .expect(404);
+      .expect(400);
 
-    expect(response.body).toEqual({ error: "Room not found." });
+    expect(response.body).toEqual({ error: "Missing required fields" });
+    expect(mockCreate).not.toHaveBeenCalled();
   });
 
   it("should return 500 on database error", async () => {
-    mockFindUnique.mockRejectedValue(new Error("Database error"));
+    const mockGame = {
+      name: "Test Game",
+      description: "Test Description",
+    };
+
+    mockCreate.mockRejectedValue(new Error("Database error"));
 
     const response = await request(app)
-      .get("/api/games/1")
+      .post("/api/games/")
+      .send(mockGame)
       .expect("Content-Type", /json/)
       .expect(500);
 
     expect(response.body).toEqual({ error: "Internal server error" });
+    expect(mockCreate).toHaveBeenCalledWith({ data: mockGame });
   });
 });
