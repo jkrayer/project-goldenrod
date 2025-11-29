@@ -56,7 +56,7 @@ PosgreSQL, Prisma
 | -------- | --------------------- |
 | id       | int                   |
 | email    | string                |
-| useName  | string                |
+| userName | string                |
 | password |                       |
 | role     | admin \| gm \| player |
 
