@@ -7,12 +7,15 @@
   "scripts": {
     "lint": "eslint .",
     "start": "npx tsx --env-file=.env --watch  src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage"
   },
   "lint-staged": {
     "*.{js,ts,css,md}": [
       "prettier --write",
-      "eslint --fix"
+      "eslint --fix",
+      "npm run test"
     ],
     "*.{md,mdx,json}": [
       "prettier --write"
@@ -31,12 +34,17 @@
   },
   "devDependencies": {
     "@eslint/js": "9.39.1",
+    "@jest/globals": "30.2.0",
     "@types/express": "5.0.5",
+    "@types/jest": "30.0.0",
     "@types/node": "24.10.0",
     "@types/pg": "8.15.6",
     "eslint": "8.57.1",
     "globals": "16.5.0",
+    "jest": "30.2.0",
     "prisma": "7.0.1",
+    "supertest": "7.1.4",
+    "ts-jest": "29.4.5",
     "typescript": "5.9.3",
     "typescript-eslint": "8.46.3"
   }
