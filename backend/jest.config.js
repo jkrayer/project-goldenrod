@@ -29,6 +29,9 @@ export default {
     ],
   },
 
+  // Setup files to run after Jest environment is set up
+  setupFilesAfterEnv: ["<rootDir>/__tests__/setup.ts"],
+
   // Coverage configuration
   collectCoverageFrom: [
     "src/**/*.{js,ts}",

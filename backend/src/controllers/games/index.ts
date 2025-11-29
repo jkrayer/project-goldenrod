@@ -1,5 +1,6 @@
 import { create } from "./create.js";
-import { get, getAll } from "./get.js";
+import { get } from "./get.js";
+import { getAll } from "./getAll.js";
 
 const games = {
   create,
