@@ -19,3 +19,8 @@ model User {
   userName  String  @unique
 }
 
+model Games {
+  id          Int      @id     @default(autoincrement())
+  name        String
+  description String
+}
