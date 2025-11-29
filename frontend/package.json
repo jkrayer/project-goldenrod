@@ -28,6 +28,7 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
+    "@project_goldenrod/shared": "^0.0.0",
     "@reduxjs/toolkit": "2.10.1",
     "ramda": "0.32.0",
     "react": "19.1.1",

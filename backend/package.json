@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "eslint .",
     "start": "npx tsx --env-file=.env --watch  src/index.ts",
-    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest --passWithNoTests",
     "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage"
   },
@@ -28,6 +28,7 @@
   "dependencies": {
     "@prisma/adapter-pg": "7.0.1",
     "@prisma/client": "7.0.1",
+    "@project_goldenrod/shared": "^0.0.0",
     "dotenv": "16.6.1",
     "express": "5.1.0",
     "pg": "8.16.3"
