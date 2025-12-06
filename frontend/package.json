@@ -31,10 +31,10 @@
     "@project_goldenrod/shared": "^0.0.0",
     "@reduxjs/toolkit": "2.10.1",
     "ramda": "0.32.0",
-    "react": "19.1.1",
-    "react-dom": "19.1.1",
+    "react": "19.2.1",
+    "react-dom": "19.2.1",
     "react-redux": "9.2.0",
-    "react-router-dom": "7.9.5"
+    "react-router": "7.10.1"
   },
   "devDependencies": {
     "@eslint/js": "9.36.0",
@@ -42,8 +42,8 @@
     "@types/ramda": "0.31.1",
     "@types/react": "19.1.16",
     "@types/react-dom": "19.1.9",
-    "@types/react-router-dom": "5.3.3",
     "@vitejs/plugin-react": "5.0.4",
+    "autoprefixer": "10.4.22",
     "babel-plugin-react-compiler": "19.1.0-rc.3",
     "eslint": "9.36.0",
     "eslint-plugin-react-hooks": "5.2.0",

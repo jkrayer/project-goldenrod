@@ -2,7 +2,7 @@ import { forwardRef, useImperativeHandle, useMemo, useRef } from "react";
 import { useFieldContext } from "../Field/FieldContext";
 import { useFormContext } from "../../Form/FormContext";
 import { type TextAreaProps } from "./TextAreaTypes";
-import inputStyles from "../Input.module.css";
+import inputStyles from "../Input/Input.module.css";
 import styles from "./TextArea.module.css";
 import { mergeStrings } from "@lib";
 

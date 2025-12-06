@@ -1,7 +1,6 @@
 import { forwardRef } from "react";
 import type { ButtonProps } from "./ButtonTypes";
 import styles from "./Button.module.css";
-import coreStyles from "../Buttons.module.css";
 import { useOptionalFormContext } from "../Form/FormContext";
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -22,11 +21,12 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // Handle disabled state for anchors
     const isDisabled = formIsLoading || formIsDisabled || disabled || isLoading;
     const showLoading = (formIsLoading && type === "submit") || isLoading;
-
+    console.log(showLoading);
+    // ${coreStyles.btn}
     return (
       <button
         {...props}
-        className={`${coreStyles.btn} ${styles.button}`}
+        className={`${styles.button}`}
         disabled={isDisabled}
         ref={ref}
         type={type}

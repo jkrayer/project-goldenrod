@@ -1,4 +1,4 @@
-import { useFieldContext } from "../../FormFields/Field/FieldContext";
+import { useFieldContext } from "../../Field/FieldContext";
 import { type LabelProps } from "./LabelTypes";
 import styles from "../Labels.module.css";
 

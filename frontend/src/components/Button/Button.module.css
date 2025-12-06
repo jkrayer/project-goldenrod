@@ -1,42 +1,28 @@
 /* Scoped CSS */
 .button {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  padding: 0 var(--dimensionL);
-  border-radius: var(--borderRadiusS);
-  transition: background-color 0.15s ease-in-out;
+  padding: 0.25em 0.5em;
+  border: 1px solid transparent;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  background-color: gold;
+  transition: background-color 0.15s ease-in-out;
 }
 
 .button:focus {
   outline: none;
-  box-shadow:
-    0 0 0 1px var(--itnWhite),
-    0 0 0 1px var(--itnWhite),
-    0 0 0 1px var(--itnWhite),
-    /* might need to be primary only */ 0 0 0 3px var(--primaryBlue),
-    0 0 0 4.5px var(--itnWhite);
+  border-color: gold;
+  box-shadow: 0 0 0 2px gold;
 }
 
 .button:disabled {
-  color: var(--itnWhite);
-  background-color: var(--gray300);
   cursor: not-allowed;
-}
-
-.button-small {
-  height: 24px;
-  /* font-weight: 400; */
-}
-
-.button-medium {
-  height: 30px;
-}
-
-.button-large {
-  height: 36px;
-  font-size: medium;
+  opacity: 0.6;
 }
 
 .button-spinner {

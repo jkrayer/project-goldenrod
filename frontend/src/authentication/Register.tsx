@@ -1,4 +1,29 @@
+import { Button } from "../components/Button";
+import { Form } from "../components/Form";
+import { Field } from "../components/FormFields";
+
 export default function Register() {
-  // this needs to be behind authentication and authorization
-  return <div>Register Page</div>;
+  return (
+    <div>
+      <h1>Register</h1>
+      <Form onSubmit={() => {}}>
+        <Field.Root id="email" required>
+          <Field.Label>Email</Field.Label>
+          <Field.Input type="email" name="email" />
+          <Field.Error>Please enter a valid email.</Field.Error>
+        </Field.Root>
+        <Field.Root id="username" required>
+          <Field.Label>Username</Field.Label>
+          <Field.Input type="text" name="username" />
+          <Field.Error>Please enter a valid username.</Field.Error>
+        </Field.Root>
+        <Field.Root id="password" required>
+          <Field.Label>Password</Field.Label>
+          <Field.Input type="password" name="password" />
+          <Field.Error>Please enter a valid password.</Field.Error>
+        </Field.Root>
+        <Button type="submit">Register</Button>
+      </Form>
+    </div>
+  );
 }
