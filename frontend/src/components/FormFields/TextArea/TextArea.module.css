@@ -1,0 +1,9 @@
+/* Scoped CSS */
+.textarea {
+  padding: var(--dimensionS);
+  resize: vertical;
+  min-height: calc(
+    3em + calc(3 * var(--dimensionS) * 2)
+  ); /* 3 rows + padding */
+  font-family: inherit;
+}

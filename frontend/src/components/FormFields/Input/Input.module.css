@@ -1,0 +1,58 @@
+/* Scoped CSS */
+.input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 30px;
+  padding: 0 var(--dimensionS);
+  border: none;
+  outline: none;
+  font-family: "Lato", sans-serif;
+  /* font-size: 1rem; temporary removal because MKI controls fonts */
+  color: var(--gray100);
+  text-overflow: ellipsis;
+}
+
+.input::placeholder {
+  color: var(--gray300);
+}
+
+/* WRAPPER */
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--gray400);
+  border-radius: var(--borderRadiusS);
+  background-color: var(--itnWhite);
+  transition:
+    border-color 0.2s ease-in-out,
+    box-shadow 0.2s ease-in-out;
+  width: 100%;
+}
+
+.input-prefix,
+.input-suffix {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 30px;
+  height: 30px;
+}
+
+.input-wrapper:has(.input:focus) {
+  border-color: var(--primaryBlue);
+  box-shadow: 0 0 0 1px var(--primaryBlue);
+}
+
+.input-wrapper:has(.input[aria-invalid="true"]) {
+  border-color: var(--secondaryRed);
+  box-shadow: 0 0 0 1px var(--secondaryRed);
+}
+
+.input-wrapper:has(.input:disabled),
+.input-wrapper:has(.input:read-only) {
+  cursor: not-allowed;
+  color: var(--gray200);
+  background-color: var(--tertiaryLilac);
+  box-shadow: none;
+}

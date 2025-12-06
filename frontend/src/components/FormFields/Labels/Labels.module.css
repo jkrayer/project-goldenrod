@@ -1,0 +1,16 @@
+/* Scoped CSS */
+.label {
+  display: block;
+  font-weight: 700;
+  /* font-size: var(--fontSizeM); temporary removal because MKI controls fonts */
+  line-height: 1.5;
+  color: var(--gray200);
+}
+
+.label-error {
+  color: var(--secondaryRed);
+}
+
+.label-required-indicator {
+  color: var(--gray200);
+}
