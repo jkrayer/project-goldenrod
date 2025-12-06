@@ -5,7 +5,7 @@
   padding: 0.5em 0.25em;
   border: 1px solid var(--gray900);
   outline: none;
-  color: var(--gray100);
+  color: var(--gray900);
   text-overflow: ellipsis;
 }
 

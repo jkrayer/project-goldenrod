@@ -1,13 +1,10 @@
-export type TableColumn<T> = {
-  key: T;
+export type TableColumn<T, K extends keyof T | string = keyof T> = {
+  key: K;
   label: string;
 };
 
-export type TableProps<
-  T extends Record<string, unknown>,
-  K = keyof T | string,
-> = {
-  cols: TableColumn<K>[];
+export type TableProps<T, K extends keyof T> = {
+  cols: TableColumn<T>[];
   rows: T[];
   rowId: K;
 };

@@ -10,6 +10,8 @@ import type React from "react";
  * @param {keyof T} props.rowId - The property name to use as the unique row key
  * @returns A table element with header and data rows
  *
+ * @since 0.1.0
+ *
  * @example
  * ```tsx
  * const columns = [
@@ -25,7 +27,7 @@ import type React from "react";
  */
 export const Table = <
   T extends Record<string, unknown>,
-  K extends keyof T & React.Key = keyof T & React.Key,
+  K extends keyof T & React.Key,
 >({
   cols,
   rows,
@@ -36,7 +38,7 @@ export const Table = <
       <thead>
         <tr>
           {cols.map((col) => (
-            <th key={col.key}>{col.label}</th>
+            <th key={String(col.key)}>{col.label}</th>
           ))}
         </tr>
       </thead>
@@ -44,7 +46,7 @@ export const Table = <
         {rows.map((row) => (
           <tr key={String(row[rowId])}>
             {cols.map((col) => (
-              <td key={col.key}>{String(row[col.key] ?? "")}</td>
+              <td key={String(col.key)}>{String(row[col.key] ?? "")}</td>
             ))}
           </tr>
         ))}

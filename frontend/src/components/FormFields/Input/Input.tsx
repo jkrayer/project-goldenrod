@@ -5,6 +5,35 @@ import { useFieldContext } from "../Field/FieldContext";
 import { useFormContext } from "../../Form/FormContext";
 import { mergeStrings } from "@lib";
 
+/**
+ * A form input component that integrates with Field and Form contexts.
+ *
+ * @remarks
+ * This component automatically connects to parent Field and Form contexts to:
+ * - Manage disabled states based on form loading/disabled states
+ * - Handle error states and ARIA attributes
+ * - Associate with labels and error messages
+ *
+ * The component forwards refs to the underlying input element and merges
+ * ARIA attributes from both props and context.
+ *
+ * @param props - Input props including standard HTML input attributes
+ * @param props.aria-describedby - Optional ARIA describedby attribute (merged with error IDs from context)
+ * @param props.type - Input type (text, password, email, etc.)
+ * @param props.value - Controlled input value
+ * @param ref - Forwarded ref to the underlying input element
+ *
+ * @since 0.1.0
+ *
+ * @example
+ * ```tsx
+ * <Field.Root id="username">
+ *   <Field.Label>Username</Field.Label>
+ *   <Field.Input type="text" value={username} onChange={handleChange} />
+ *   <Field.Error>Error Message</Field.Error>
+ * </Field.Root>
+ * ```
+ */
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ "aria-describedby": ariaDescribedByProp, type, value, ...props }, ref) => {
     // Expose the input ref to the parent component
