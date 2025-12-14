@@ -1,4 +1,5 @@
 import express, { type Request, type Response } from "express";
+import cors from "cors";
 import {
   gameValidation,
   userValidation,
@@ -16,6 +17,12 @@ const port = process.env.PORT || 3000;
 
 // Middleware to parse JSON bodies
 app.use(express.json());
+app.use(
+  cors({
+    origin: /https?:\/\/localhost:5173/, // Allow requests from any origin
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  }),
+);
 
 // Define the root path with a greeting message
 app.get("/", (req: Request, res: Response) => {

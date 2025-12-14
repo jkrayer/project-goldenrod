@@ -1,10 +1,9 @@
 import { configureStore } from "@reduxjs/toolkit";
-import game from "./game";
-import lobby from "./user";
+import { games } from "./games/slice";
 import user from "./user";
 
 export const store = configureStore({
-  reducer: { game, lobby, user },
+  reducer: { [games.reducerPath]: games.reducer, user },
 });
 
 // Infer the `RootState` and `AppDispatch` types from the store itself

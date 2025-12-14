@@ -4,7 +4,7 @@ import { prisma } from "../../lib/prisma.js";
 export const login = async (req: Request, res: Response) => {
   // get user data from request body
   const { username, email } = req.body;
-
+  console.log("Login request received for user:", username);
   // Sanitize user data
   // to do, add xss sanitization
 
