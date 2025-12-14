@@ -14,6 +14,24 @@ jest.unstable_mockModule("../../lib/prisma.js", () => ({
   },
 }));
 
+// Mock bcrypt
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockHash = jest.fn<any>();
+
+jest.unstable_mockModule("bcrypt", () => ({
+  default: {
+    hash: mockHash,
+  },
+}));
+
+// Mock isPrismaError
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockIsPrismaError = jest.fn<any>();
+
+jest.unstable_mockModule("../../lib/isPrismaError.js", () => ({
+  isPrismaError: mockIsPrismaError,
+}));
+
 // Import after mocking
 const { register } = await import("./register.js");
 
@@ -34,19 +52,30 @@ describe("POST /api/users/register ", () => {
       id: 1,
       username: "TestUser",
       email: "testuser@example.com",
+      password: "$2b$10$hashedpassword",
     };
 
+    mockHash.mockResolvedValue("$2b$10$hashedpassword");
     mockCreate.mockResolvedValue(mockUser);
 
     const response = await request(app)
       .post("/api/users/register")
-      .send({ username: "TestUser", email: "testuser@example.com" })
+      .send({
+        username: "TestUser",
+        email: "testuser@example.com",
+        password: "password123",
+      })
       .expect("Content-Type", /json/)
       .expect(201);
 
-    expect(response.body).toEqual({ data: mockUser });
+    expect(response.body).toEqual({ data: "User created successfully." });
+    expect(mockHash).toHaveBeenCalledWith("password123", 10);
     expect(mockCreate).toHaveBeenCalledWith({
-      data: { userName: "TestUser", email: "testuser@example.com" },
+      data: {
+        username: "TestUser",
+        email: "testuser@example.com",
+        password: "$2b$10$hashedpassword",
+      },
     });
   });
 
@@ -55,23 +84,39 @@ describe("POST /api/users/register ", () => {
       code: "P2002",
       message: "Unique constraint failed",
     };
+
+    mockHash.mockResolvedValue("$2b$10$hashedpassword");
     mockCreate.mockRejectedValue(prismaError);
+    mockIsPrismaError.mockReturnValue(true);
 
     const response = await request(app)
       .post("/api/users/register")
-      .send({ username: "NonExistentUser", email: "nonexistent@example.com" })
+      .send({
+        username: "TestUser",
+        email: "testuser@example.com",
+        password: "password123",
+      })
       .expect("Content-Type", /json/)
       .expect(409);
 
     expect(response.body).toEqual({ error: "User already exists." });
+    expect(mockIsPrismaError).toHaveBeenCalledWith(prismaError);
   });
 
   it("should return 500 on database error", async () => {
-    mockCreate.mockRejectedValue(new Error("Database error"));
+    const dbError = new Error("Database error");
+
+    mockHash.mockResolvedValue("$2b$10$hashedpassword");
+    mockCreate.mockRejectedValue(dbError);
+    mockIsPrismaError.mockReturnValue(false);
 
     const response = await request(app)
       .post("/api/users/register")
-      .send({ username: "TestUser", email: "testuser@example.com" })
+      .send({
+        username: "TestUser",
+        email: "testuser@example.com",
+        password: "password123",
+      })
       .expect("Content-Type", /json/)
       .expect(500);
 

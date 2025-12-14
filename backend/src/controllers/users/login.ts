@@ -1,24 +1,13 @@
 import type { Request, Response } from "express";
+import bcrypt from "bcrypt";
 import { prisma } from "../../lib/prisma.js";
 
 export const login = async (req: Request, res: Response) => {
-  // get user data from request body
-  const { username, email } = req.body;
-  console.log("Login request received for user:", username);
-  // Sanitize user data
-  // to do, add xss sanitization
-
-  // validate user data
-  if (!username || !email) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
-  // add user to database
   try {
     const user = await prisma.user.findFirst({
+      omit: { id: true },
       where: {
-        userName: username,
-        email,
+        email: req.body.email,
       },
     });
 
@@ -26,8 +15,15 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid username or email" });
     }
 
-    // return success response
-    res.status(200).json({ data: user });
+    const { password, ...data } = user;
+
+    const match = await bcrypt.compare(req.body.password, password);
+
+    if (!match) {
+      return res.status(401).json({ error: "Invalid username or email" });
+    }
+
+    res.status(200).json({ data });
   } catch (error) {
     console.error("Error logging in user:", error);
 

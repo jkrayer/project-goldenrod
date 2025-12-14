@@ -14,6 +14,16 @@ jest.unstable_mockModule("../../lib/prisma.js", () => ({
   },
 }));
 
+// Mock bcrypt
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockCompare = jest.fn<any>();
+
+jest.unstable_mockModule("bcrypt", () => ({
+  default: {
+    compare: mockCompare,
+  },
+}));
+
 // Import after mocking
 const { login } = await import("./login.js");
 
@@ -29,25 +39,36 @@ describe("POST /api/users/login ", () => {
     jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  it("should return 200 when the user is found", async () => {
+  it("should return 200 when credentials are valid", async () => {
     const mockUser = {
-      id: 1,
       username: "TestUser",
       email: "testuser@example.com",
+      password: "$2b$10$hashedpassword",
     };
 
     mockFindFirst.mockResolvedValue(mockUser);
+    mockCompare.mockResolvedValue(true);
 
     const response = await request(app)
       .post("/api/users/login")
-      .send({ username: "TestUser", email: "testuser@example.com" })
+      .send({ email: "testuser@example.com", password: "password123" })
       .expect("Content-Type", /json/)
       .expect(200);
 
-    expect(response.body).toEqual({ data: mockUser });
-    expect(mockFindFirst).toHaveBeenCalledWith({
-      where: { userName: "TestUser", email: "testuser@example.com" },
+    expect(response.body).toEqual({
+      data: {
+        username: "TestUser",
+        email: "testuser@example.com",
+      },
     });
+    expect(mockFindFirst).toHaveBeenCalledWith({
+      omit: { id: true },
+      where: { email: "testuser@example.com" },
+    });
+    expect(mockCompare).toHaveBeenCalledWith(
+      "password123",
+      "$2b$10$hashedpassword",
+    );
   });
 
   it("should return 401 when user not found", async () => {
@@ -55,11 +76,35 @@ describe("POST /api/users/login ", () => {
 
     const response = await request(app)
       .post("/api/users/login")
-      .send({ username: "NonExistentUser", email: "nonexistent@example.com" })
+      .send({ email: "nonexistent@example.com", password: "password123" })
       .expect("Content-Type", /json/)
       .expect(401);
 
     expect(response.body).toEqual({ error: "Invalid username or email" });
+    expect(mockCompare).not.toHaveBeenCalled();
+  });
+
+  it("should return 401 when password is incorrect", async () => {
+    const mockUser = {
+      username: "TestUser",
+      email: "testuser@example.com",
+      password: "$2b$10$hashedpassword",
+    };
+
+    mockFindFirst.mockResolvedValue(mockUser);
+    mockCompare.mockResolvedValue(false);
+
+    const response = await request(app)
+      .post("/api/users/login")
+      .send({ email: "testuser@example.com", password: "wrongpassword" })
+      .expect("Content-Type", /json/)
+      .expect(401);
+
+    expect(response.body).toEqual({ error: "Invalid username or email" });
+    expect(mockCompare).toHaveBeenCalledWith(
+      "wrongpassword",
+      "$2b$10$hashedpassword",
+    );
   });
 
   it("should return 500 on database error", async () => {
@@ -67,7 +112,7 @@ describe("POST /api/users/login ", () => {
 
     const response = await request(app)
       .post("/api/users/login")
-      .send({ username: "TestUser", email: "testuser@example.com" })
+      .send({ email: "testuser@example.com", password: "password123" })
       .expect("Content-Type", /json/)
       .expect(500);
 

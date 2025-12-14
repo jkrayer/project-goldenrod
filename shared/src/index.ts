@@ -5,8 +5,9 @@ export { gameValidation, userValidation } from "./validation/index.js";
 // Example shared types
 export type User = {
   id: number;
-  username: string;
   email: string;
+  password: string;
+  userName: string;
 };
 
 export type Game = {
