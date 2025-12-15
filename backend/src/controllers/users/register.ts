@@ -9,8 +9,9 @@ export const register = async (req: Request, res: Response) => {
 
     await prisma.user.create({
       data: {
-        ...req.body,
+        email: req.body.email.toLowerCase(),
         password,
+        userName: req.body.userName || "",
       },
     });
 
