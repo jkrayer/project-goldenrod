@@ -4,11 +4,16 @@ import { login } from "./api";
 
 type Status = "idle" | "loading" | "succeeded" | "failed";
 
-type UserSlice = { status: Status; user: User | null };
+type UserSlice = { status: Status; data: User };
 
 const initialState: UserSlice = {
   status: "idle",
-  user: null,
+  data: {
+    email: "",
+    role: "PLAYER",
+    token: "",
+    userName: "",
+  },
 };
 
 export const userSlice = createSlice<
@@ -28,7 +33,7 @@ export const userSlice = createSlice<
       })
       .addCase(login.fulfilled, (state, action: PayloadAction<User>) => {
         state.status = "succeeded";
-        state.user = action.payload;
+        state.data = action.payload;
       })
       .addCase(login.rejected, (state) => {
         state.status = "failed";

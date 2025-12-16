@@ -1,11 +1,10 @@
 import type { Request, Response } from "express";
 import bcrypt from "bcrypt";
-import { prisma } from "../../lib/prisma.js";
+import { generateToken, prisma } from "../../lib/index.js";
 
 export const login = async (req: Request, res: Response) => {
   try {
-    const user = await prisma.user.findFirst({
-      omit: { id: true },
+    const user = await prisma.user.findUnique({
       where: {
         email: req.body.email,
       },
@@ -15,7 +14,7 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid username or email" });
     }
 
-    const { password, ...data } = user;
+    const { id, password, ...data } = user;
 
     const match = await bcrypt.compare(req.body.password, password);
 
@@ -23,7 +22,9 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid username or email" });
     }
 
-    res.status(200).json({ data });
+    const token = generateToken({ id, role: user.role });
+
+    res.status(200).json({ data, token });
   } catch (error) {
     console.error("Error logging in user:", error);
 

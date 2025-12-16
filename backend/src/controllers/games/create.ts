@@ -39,6 +39,14 @@ import { prisma } from "../../lib/prisma.js";
  * ```
  */
 export const create = async (req: Request, res: Response) => {
+  const { userRole } = res.locals;
+
+  if (["ADMIN", "DM"].includes(userRole) === false) {
+    return res
+      .status(403)
+      .json({ error: "Forbidden: Only Admins and DMs can create game rooms" });
+  }
+
   // get room data from request body
   const { name, description } = req.body;
 

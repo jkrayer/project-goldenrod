@@ -4,9 +4,9 @@ import {
   gameValidation,
   userValidation,
   type Game,
-  type User,
+  type UserPayload,
 } from "@project_goldenrod/shared";
-import { validate } from "./lib/validate.js";
+import { authenticateToken, validate } from "./lib/index.js";
 import controllers from "./controllers/index.js";
 
 // Create a new express application instance
@@ -32,25 +32,27 @@ app.get("/", (req: Request, res: Response) => {
 // Define a sample API endpoint
 app.post(
   "/api/users/register",
-  validate<User>(userValidation),
+  validate<UserPayload>(userValidation),
   controllers.users.register,
 );
 
 app.post(
   "/api/users/login",
-  validate<User>(userValidation),
+  validate<UserPayload>(userValidation),
   controllers.users.login,
 );
 
 app.post(
   "/api/games/",
+  authenticateToken,
+  // @ts-expect-error - to fix later
   validate<Game>(gameValidation),
   controllers.games.create,
 );
 
-app.get("/api/games/", controllers.games.getAll);
+app.get("/api/games/", authenticateToken, controllers.games.getAll);
 
-app.get("/api/games/:id", controllers.games.get);
+app.get("/api/games/:id", authenticateToken, controllers.games.get);
 
 // Start the Express server
 app.listen(port, () => {

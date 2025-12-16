@@ -1,9 +1,31 @@
+import { useMemo } from "react";
 import { Table } from "../../components/Table";
+import { useGetAllQuery } from "../../store/games/slice";
 
 export default function Lobby() {
-  // on load check if user is authenticated
-  // if so, load
-  // if not, open login/register modal
+  const { data, error, isLoading } = useGetAllQuery();
+
+  const games = useMemo(() => {
+    console.log(
+      "Lobby: data=",
+      data,
+      " error=",
+      error,
+      " isLoading=",
+      isLoading,
+    );
+    if (!data) return [];
+
+    return (
+      data?.map((game) => ({
+        id: game.id,
+        name: game.name,
+        description: game.description,
+        action: <button>Join</button>,
+      })) || []
+    );
+  }, [data]);
+
   return (
     <div>
       <h1>Lobby</h1>
@@ -14,20 +36,7 @@ export default function Lobby() {
           { key: "action", label: "" },
         ]}
         rowId="id"
-        rows={[
-          {
-            id: 1,
-            name: "Test Game",
-            description: "This is a test game",
-            action: <button>Join</button>,
-          },
-          {
-            id: 2,
-            name: "Another Game",
-            description: "This is another test game",
-            action: <button>Join</button>,
-          },
-        ]}
+        rows={games}
       />
     </div>
   );

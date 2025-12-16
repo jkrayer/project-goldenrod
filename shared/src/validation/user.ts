@@ -1,7 +1,7 @@
 import { object, string } from "yup";
-import type { User } from "../index.js";
+import type { UserPayload } from "../index.js";
 
-export const userValidation = object<Partial<User>>({
+export const userValidation = object<UserPayload>({
   userName: string()
     .optional()
     .min(3, "User name must be at least 3 characters")
