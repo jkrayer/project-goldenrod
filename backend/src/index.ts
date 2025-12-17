@@ -1,6 +1,7 @@
 import express, { type Request, type Response } from "express";
 import cors from "cors";
 import {
+  API_ENDPOINTS,
   gameValidation,
   userValidation,
   type Game,
@@ -25,34 +26,42 @@ app.use(
 );
 
 // Define the root path with a greeting message
+// this should probably be moved to a health check endpoint later
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Welcome to the Express + TypeScript Server!" });
 });
 
-// Define a sample API endpoint
+// AUTH
 app.post(
-  "/api/users/register",
+  API_ENDPOINTS.REGISTER,
   validate<UserPayload>(userValidation),
   controllers.users.register,
 );
 
 app.post(
-  "/api/users/login",
+  API_ENDPOINTS.LOGIN,
   validate<UserPayload>(userValidation),
   controllers.users.login,
 );
 
+app.get(
+  API_ENDPOINTS.VERIFY_TOKEN,
+  authenticateToken,
+  controllers.users.verify,
+);
+
+// GAMES
 app.post(
-  "/api/games/",
+  API_ENDPOINTS.GAMES,
   authenticateToken,
   // @ts-expect-error - to fix later
   validate<Game>(gameValidation),
   controllers.games.create,
 );
 
-app.get("/api/games/", authenticateToken, controllers.games.getAll);
+app.get(API_ENDPOINTS.GAMES, authenticateToken, controllers.games.getAll);
 
-app.get("/api/games/:id", authenticateToken, controllers.games.get);
+app.get(API_ENDPOINTS.GAME, authenticateToken, controllers.games.get);
 
 // Start the Express server
 app.listen(port, () => {
