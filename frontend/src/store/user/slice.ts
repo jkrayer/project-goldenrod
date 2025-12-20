@@ -18,14 +18,19 @@ const initialState: UserSlice = {
 
 export const userSlice = createSlice<
   UserSlice,
-  Record<string, never>,
+  { logout: (state: UserSlice) => void },
   "user",
-  never,
+  { logout: (state: UserSlice) => void },
   "user"
 >({
   name: "user",
   initialState,
-  reducers: {},
+  reducers: {
+    logout: (state) => {
+      state.data = { ...initialState.data };
+      state.status = "idle";
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(login.pending, (state) => {

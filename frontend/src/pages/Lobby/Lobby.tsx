@@ -1,42 +1,40 @@
-import { useMemo } from "react";
+// import { useMemo } from "react";
+import { Link } from "react-router";
+import type { Game } from "@project_goldenrod/shared";
 import { Table } from "../../components/Table";
 import { useGetAllQuery } from "../../store/games/slice";
+import { GAME_PATH } from "../../routes/routes";
 
 export default function Lobby() {
-  const { data, error, isLoading } = useGetAllQuery();
+  const { data } = useGetAllQuery(); // error, isLoading
 
-  const games = useMemo(() => {
-    console.log(
-      "Lobby: data=",
-      data,
-      " error=",
-      error,
-      " isLoading=",
-      isLoading,
-    );
-    if (!data) return [];
+  // const games = useMemo(() => {
+  //   if (!data) return [];
 
-    return (
-      data?.map((game) => ({
-        id: game.id,
-        name: game.name,
-        description: game.description,
-        action: <button>Join</button>,
-      })) || []
-    );
-  }, [data]);
+  //   return (
+  //     data?.map((game) => ({
+  //       id: game.id,
+  //       name: game.name,
+  //       description: game.description,
+  //     })) || []
+  //   );
+  // }, [data]);
 
   return (
     <div>
       <h1>Lobby</h1>
-      <Table
+      <Table<Game, "id">
         cols={[
           { key: "name", label: "Name" },
           { key: "description", label: "Description" },
-          { key: "action", label: "" },
+          {
+            key: "action",
+            label: "",
+            render: (game) => <Link to={`/${GAME_PATH}/${game.id}`}>Join</Link>,
+          },
         ]}
         rowId="id"
-        rows={games}
+        rows={data || []}
       />
     </div>
   );

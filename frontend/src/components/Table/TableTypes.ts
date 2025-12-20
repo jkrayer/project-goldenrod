@@ -1,6 +1,7 @@
-export type TableColumn<T, K extends keyof T | string = keyof T> = {
-  key: K;
+export type TableColumn<T> = {
+  key: keyof T | "action";
   label: string;
+  render?: (row: T) => React.ReactNode;
 };
 
 export type TableProps<T, K extends keyof T> = {

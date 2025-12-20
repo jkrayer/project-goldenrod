@@ -4,6 +4,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import * as Routes from "./routes";
 import Admin from "../pages/Admin/Admin";
 import Game from "../pages/Game/Game";
+import Home from "../pages/Home/Home";
 import Lobby from "../pages/Lobby/Lobby";
 import Login from "../authentication/Login";
 import Register from "../authentication/Register";
@@ -15,13 +16,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        Component: () => <h1>root</h1>,
-        middleware: [
-          function () {
-            // eslint-disable-next-line prefer-rest-params
-            console.log("root middleware", arguments);
-          },
-        ],
+        Component: Home,
       },
       {
         path: Routes.ADMIN_PATH,

@@ -46,7 +46,9 @@ export const Table = <
         {rows.map((row) => (
           <tr key={String(row[rowId])}>
             {cols.map((col) => (
-              <td key={String(col.key)}>{String(row[col.key] ?? "")}</td>
+              <td key={String(col.key)}>
+                {col.render ? col.render(row) : String(row[col.key] ?? "")}
+              </td>
             ))}
           </tr>
         ))}

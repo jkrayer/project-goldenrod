@@ -12,7 +12,7 @@ export const login = createAsyncThunk<
 >("user/login", async (payload, { rejectWithValue }) => {
   try {
     const response = await fetch(
-      `http://localhost:3000${API_ENDPOINTS.login}`,
+      `http://localhost:3000${API_ENDPOINTS.LOGIN}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

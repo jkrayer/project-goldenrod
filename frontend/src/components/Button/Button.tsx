@@ -48,7 +48,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     // Handle disabled state for anchors
     const isDisabled = formIsLoading || formIsDisabled || disabled || isLoading;
     const showLoading = (formIsLoading && type === "submit") || isLoading;
-    console.log(showLoading);
+
     // ${coreStyles.btn}
     return (
       <button

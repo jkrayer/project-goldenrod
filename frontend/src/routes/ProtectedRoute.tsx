@@ -1,15 +1,16 @@
 import { useEffect, type PropsWithChildren } from "react";
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router";
-import type { RootState } from "../store/store";
 import { API_ENDPOINTS } from "@project_goldenrod/shared";
+import { useLogout, useToken } from "../store/user";
+// import type { RootState } from "../store/store";
 
 export default function ProtectedRoute({
   children,
 }: PropsWithChildren<unknown>) {
   const navigate = useNavigate();
   // get local token
-  const { token } = useSelector((state: RootState) => state.user.data);
+  const logout = useLogout();
+  const token = useToken();
 
   useEffect(() => {
     // if not exists redirect to login
@@ -32,7 +33,7 @@ export default function ProtectedRoute({
           },
         );
 
-        const data = await response.json();
+        const { data } = await response.json();
 
         if (!data.valid) {
           throw new Error("Invalid token");
@@ -41,6 +42,7 @@ export default function ProtectedRoute({
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_) {
         // add flash message: "Session expired, please log in again"
+        logout();
         navigate("/login");
       }
     };
