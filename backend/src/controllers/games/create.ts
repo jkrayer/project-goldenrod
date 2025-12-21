@@ -1,5 +1,5 @@
-import type { Request, Response } from "express";
-import { prisma } from "../../lib/prisma.js";
+import type { NextFunction, Request, Response } from "express";
+import { AppError, prisma } from "../../lib/index.js";
 
 /**
  * Creates a new game room in the database.
@@ -38,14 +38,20 @@ import { prisma } from "../../lib/prisma.js";
  * }
  * ```
  */
-export const create = async (req: Request, res: Response) => {
+export const create = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const { userRole } = res.locals;
 
   if (["ADMIN", "DM"].includes(userRole) === false) {
-    return res.status(403).json({
-      error:
+    return next(
+      new AppError(
         "Insufficient permission: Only Admins and DMs can create game rooms",
-    });
+        403,
+      ),
+    );
   }
 
   const { name, description } = req.body;
@@ -60,8 +66,11 @@ export const create = async (req: Request, res: Response) => {
 
     return res.status(201).json({ data: newRoom });
   } catch (error) {
-    console.error("Error creating room:", error);
-
-    return res.status(500).json({ error: "Internal server error" });
+    return next(
+      new AppError(
+        `Error creating room: ${error instanceof Error ? error.message : String(error)}`,
+        500,
+      ),
+    );
   }
 };

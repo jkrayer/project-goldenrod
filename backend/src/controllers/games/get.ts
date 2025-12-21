@@ -1,5 +1,5 @@
-import type { Request, Response } from "express";
-import { prisma } from "../../lib/prisma.js";
+import type { NextFunction, Request, Response } from "express";
+import { AppError, prisma } from "../../lib/index.js";
 
 /**
  * Retrieves a game room by its ID from the database.
@@ -27,14 +27,14 @@ import { prisma } from "../../lib/prisma.js";
  * // Response: { data: { id: 123, ...otherRoomProperties } }
  * ```
  */
-export const get = async (req: Request, res: Response) => {
+export const get = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
 
   // validate room data
   if (!id) {
     console.error("Error, missing id in request parameters.");
 
-    return res.status(400).json({ error: "Missing id in request parameters." });
+    return next(new AppError("Missing id in request parameters.", 400));
   }
 
   try {
@@ -45,13 +45,16 @@ export const get = async (req: Request, res: Response) => {
     });
 
     if (!room) {
-      throw new Error("Room not found");
+      return next(new AppError("Room not found", 404));
     }
 
     return res.status(200).json({ data: room });
   } catch (error) {
-    console.error(`Error, can't find room with id ${id}:`, error);
-
-    return res.status(404).json({ error: `Can't find room ${id}` });
+    return next(
+      new AppError(
+        `Can't find room ${error instanceof Error ? error.message : String(error)}`,
+        500,
+      ),
+    );
   }
 };

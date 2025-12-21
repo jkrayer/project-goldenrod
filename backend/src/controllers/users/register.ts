@@ -1,25 +1,47 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
-import { prisma } from "../../lib/prisma.js";
-import { isPrismaError } from "../../lib/isPrismaError.js";
+import { AppError, isPrismaError, prisma } from "../../lib/index.js";
 
 /**
- * Registers a new user by creating a user account with hashed password.
+ * Registers a new user in the system.
  *
- * @param req - Express request object containing user registration data in the body:
- *   - email: User's email address (will be converted to lowercase)
- *   - password: User's plain text password (will be hashed)
- *   - userName: Optional username (defaults to empty string)
- * @param res - Express response object
+ * This function handles user registration by:
+ * 1. Hashing the provided password using bcrypt
+ * 2. Creating a new user record in the database with email, hashed password, and optional username
+ * 3. Returning a success response or appropriate error
  *
- * @returns A JSON response with one of the following:
- *   - 201: User created successfully with success message
- *   - 409: User already exists (duplicate email)
- *   - 500: Internal server error (password hashing or database error)
+ * @param req - Express request object containing user registration data in the body
+ * @param req.body.email - The user's email address (will be converted to lowercase)
+ * @param req.body.password - The user's plain text password (will be hashed)
+ * @param req.body.userName - Optional username for the user account
+ * @param res - Express response object used to send the response
+ * @param next - Express next function for error handling middleware
  *
- * @throws Logs errors to console for password hashing failures and Prisma database errors
+ * @returns A Promise that resolves to a JSON response with status 201 on success
+ *
+ * @throws {AppError} 409 - If a user with the provided email already exists
+ * @throws {AppError} 500 - If there's an error during password hashing or database operation
+ *
+ * @example
+ * ```typescript
+ * // Request body
+ * {
+ *   email: "user@example.com",
+ *   password: "securePassword123",
+ *   userName: "johndoe"
+ * }
+ *
+ * // Success response
+ * {
+ *   data: "User created successfully."
+ * }
+ * ```
  */
-export const register = async (req: Request, res: Response) => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const password = await bcrypt.hash(req.body.password, 10);
 
@@ -34,17 +56,16 @@ export const register = async (req: Request, res: Response) => {
 
       return res.status(201).json({ data: "User created successfully." });
     } catch (prismaError: unknown) {
-      console.error("Error creating user:", prismaError);
-
       if (isPrismaError(prismaError) && prismaError.code === "P2002") {
-        return res.status(409).json({ error: "User already exists." });
+        return next(new AppError("User already exists.", 409));
       } else {
-        return res.status(500).json({ error: "Internal server error" });
+        return next(new AppError("Internal server error", 500));
       }
     }
   } catch (hashError: unknown) {
+    // Additional logging for hashing errors
     console.error("Error hashing password:", hashError);
 
-    return res.status(500).json({ error: "Internal server error" });
+    return next(new AppError("Internal server error", 500));
   }
 };

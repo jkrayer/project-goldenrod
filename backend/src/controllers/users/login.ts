@@ -1,37 +1,36 @@
-import type { Request, Response } from "express";
+import type { Request, Response, NextFunction } from "express";
 import bcrypt from "bcrypt";
-import { generateToken, prisma } from "../../lib/index.js";
+import { AppError, generateToken, prisma } from "../../lib/index.js";
 
 /**
- * Authenticates a user by validating their email and password credentials.
+ * Handles user login authentication.
  *
- * @param req - Express request object containing user credentials in the body
- * @param req.body.email - The user's email address
- * @param req.body.password - The user's plain text password to verify
- * @param res - Express response object used to send the authentication result
+ * @param req - Express request object containing user credentials (email and password) in the body
+ * @param res - Express response object used to send back the user data and authentication token
+ * @param next - Express next function for error handling middleware
  *
- * @returns A JSON response with either:
- * - Success (200): User data (excluding id and password) and JWT token
- * - Unauthorized (401): Error message for invalid credentials or user not found
+ * @returns A promise that resolves to a JSON response containing:
+ * - `data`: User information (excluding id and password)
+ * - `token`: JWT authentication token
  *
- * @throws Will catch and handle errors related to database queries or password comparison
+ * @throws {AppError} 401 - When user with provided email is not found
+ * @throws {AppError} 401 - When provided password doesn't match stored password
+ * @throws {AppError} 400 - When login process fails due to other errors
  *
  * @example
  * ```typescript
- * // Request body
+ * // Request body should contain:
  * {
  *   "email": "user@example.com",
  *   "password": "userPassword123"
  * }
- *
- * // Success response
- * {
- *   "data": { "email": "user@example.com", "name": "John Doe", ... },
- *   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
- * }
  * ```
  */
-export const login = async (req: Request, res: Response) => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const user = await prisma.user.findUnique({
       where: {
@@ -40,7 +39,9 @@ export const login = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      throw new Error("User not found");
+      return next(
+        new AppError(`User with email ${req.body.email} not found`, 401),
+      );
     }
 
     const { id, password, ...data } = user;
@@ -48,21 +49,23 @@ export const login = async (req: Request, res: Response) => {
     const match = await bcrypt.compare(req.body.password, password);
 
     if (!match) {
-      console.error("Error, password mismatch:", match);
-
-      return res.status(401).json({
-        error: `Error, incorrect password for user with email ${req.body.email}`,
-      });
+      return next(
+        new AppError(
+          `Incorrect password for user with email ${req.body.email}`,
+          401,
+        ),
+      );
     }
 
     const token = generateToken({ id, role: user.role });
 
     return res.status(200).json({ data, token });
-  } catch (error) {
-    console.error("Error finding user:", error);
-
-    return res
-      .status(401)
-      .json({ error: `Can't find user with email ${req.body.email}` });
+  } catch (error: unknown) {
+    return next(
+      new AppError(
+        `Login failed ${error instanceof Error ? error.message : String(error)}`,
+        400,
+      ),
+    );
   }
 };

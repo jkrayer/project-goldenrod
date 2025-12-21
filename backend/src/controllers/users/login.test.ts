@@ -4,12 +4,12 @@ import { describe, it, expect, jest, beforeEach } from "@jest/globals";
 
 // Mock prisma before importing the controller
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockFindFirst = jest.fn<any>();
+const mockFindUnique = jest.fn<any>();
 
 jest.unstable_mockModule("../../lib/prisma.js", () => ({
   prisma: {
     user: {
-      findFirst: mockFindFirst,
+      findUnique: mockFindUnique,
     },
   },
 }));
@@ -24,13 +24,23 @@ jest.unstable_mockModule("bcrypt", () => ({
   },
 }));
 
+// Mock generateToken
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mockGenerateToken = jest.fn<any>();
+
+jest.unstable_mockModule("../../lib/token.js", () => ({
+  generateToken: mockGenerateToken,
+}));
+
 // Import after mocking
 const { login } = await import("./login.js");
+const { errorHandler } = await import("../../lib/errorHandler.js");
 
 // Create a new express application instance
 const app = express();
 app.use(express.json()); // Add JSON body parser
 app.post("/api/users/login", login);
+app.use(errorHandler); // Add error handler middleware
 
 describe("POST /api/users/login ", () => {
   beforeEach(() => {
@@ -39,15 +49,18 @@ describe("POST /api/users/login ", () => {
     jest.spyOn(console, "error").mockImplementation(() => {});
   });
 
-  it("should return 200 when credentials are valid", async () => {
+  it("should return 200 with token when credentials are valid", async () => {
     const mockUser = {
-      username: "TestUser",
+      id: 1,
+      userName: "TestUser",
       email: "testuser@example.com",
       password: "$2b$10$hashedpassword",
+      role: "PLAYER",
     };
 
-    mockFindFirst.mockResolvedValue(mockUser);
+    mockFindUnique.mockResolvedValue(mockUser);
     mockCompare.mockResolvedValue(true);
+    mockGenerateToken.mockReturnValue("mock-jwt-token");
 
     const response = await request(app)
       .post("/api/users/login")
@@ -57,22 +70,24 @@ describe("POST /api/users/login ", () => {
 
     expect(response.body).toEqual({
       data: {
-        username: "TestUser",
+        userName: "TestUser",
         email: "testuser@example.com",
+        role: "PLAYER",
       },
+      token: "mock-jwt-token",
     });
-    expect(mockFindFirst).toHaveBeenCalledWith({
-      omit: { id: true },
+    expect(mockFindUnique).toHaveBeenCalledWith({
       where: { email: "testuser@example.com" },
     });
     expect(mockCompare).toHaveBeenCalledWith(
       "password123",
       "$2b$10$hashedpassword",
     );
+    expect(mockGenerateToken).toHaveBeenCalledWith({ id: 1, role: "PLAYER" });
   });
 
   it("should return 401 when user not found", async () => {
-    mockFindFirst.mockResolvedValue(null);
+    mockFindUnique.mockResolvedValue(null);
 
     const response = await request(app)
       .post("/api/users/login")
@@ -80,18 +95,23 @@ describe("POST /api/users/login ", () => {
       .expect("Content-Type", /json/)
       .expect(401);
 
-    expect(response.body).toEqual({ error: "Invalid username or email" });
+    expect(response.body).toEqual({
+      error: "User with email nonexistent@example.com not found",
+    });
     expect(mockCompare).not.toHaveBeenCalled();
+    expect(mockGenerateToken).not.toHaveBeenCalled();
   });
 
   it("should return 401 when password is incorrect", async () => {
     const mockUser = {
-      username: "TestUser",
+      id: 1,
+      userName: "TestUser",
       email: "testuser@example.com",
       password: "$2b$10$hashedpassword",
+      role: "PLAYER",
     };
 
-    mockFindFirst.mockResolvedValue(mockUser);
+    mockFindUnique.mockResolvedValue(mockUser);
     mockCompare.mockResolvedValue(false);
 
     const response = await request(app)
@@ -100,22 +120,26 @@ describe("POST /api/users/login ", () => {
       .expect("Content-Type", /json/)
       .expect(401);
 
-    expect(response.body).toEqual({ error: "Invalid username or email" });
+    expect(response.body).toEqual({
+      error: "Incorrect password for user with email testuser@example.com",
+    });
     expect(mockCompare).toHaveBeenCalledWith(
       "wrongpassword",
       "$2b$10$hashedpassword",
     );
+    expect(mockGenerateToken).not.toHaveBeenCalled();
   });
 
-  it("should return 500 on database error", async () => {
-    mockFindFirst.mockRejectedValue(new Error("Database error"));
+  it("should return 400 on database error", async () => {
+    mockFindUnique.mockRejectedValue(new Error("Database error"));
 
     const response = await request(app)
       .post("/api/users/login")
       .send({ email: "testuser@example.com", password: "password123" })
       .expect("Content-Type", /json/)
-      .expect(500);
+      .expect(400);
 
-    expect(response.body).toEqual({ error: "Internal server error" });
+    expect(response.body).toEqual({ error: "Login failed Database error" });
+    expect(mockGenerateToken).not.toHaveBeenCalled();
   });
 });

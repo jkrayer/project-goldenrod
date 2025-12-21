@@ -34,11 +34,13 @@ jest.unstable_mockModule("../../lib/isPrismaError.js", () => ({
 
 // Import after mocking
 const { register } = await import("./register.js");
+const { errorHandler } = await import("../../lib/errorHandler.js");
 
 // Create a new express application instance
 const app = express();
 app.use(express.json()); // Add JSON body parser
 app.post("/api/users/register", register);
+app.use(errorHandler); // Add error handler middleware
 
 describe("POST /api/users/register ", () => {
   beforeEach(() => {
@@ -50,7 +52,7 @@ describe("POST /api/users/register ", () => {
   it("should return 201 when the user is created", async () => {
     const mockUser = {
       id: 1,
-      username: "TestUser",
+      userName: "TestUser",
       email: "testuser@example.com",
       password: "$2b$10$hashedpassword",
     };
@@ -72,7 +74,7 @@ describe("POST /api/users/register ", () => {
     expect(mockHash).toHaveBeenCalledWith("password123", 10);
     expect(mockCreate).toHaveBeenCalledWith({
       data: {
-        username: "TestUser",
+        userName: "",
         email: "testuser@example.com",
         password: "$2b$10$hashedpassword",
       },
@@ -121,7 +123,7 @@ describe("POST /api/users/register ", () => {
       .expect(500);
 
     expect(response.body).toEqual({
-      error: `Failed to create user. Error: Database error`,
+      error: "Internal server error",
     });
   });
 });

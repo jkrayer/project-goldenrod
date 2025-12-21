@@ -7,7 +7,7 @@ import {
   type Game,
   type UserPayload,
 } from "@project_goldenrod/shared";
-import { authenticateToken, validate } from "./lib/index.js";
+import { authenticateToken, errorHandler, validate } from "./lib/index.js";
 import controllers from "./controllers/index.js";
 
 // Create a new express application instance
@@ -62,6 +62,9 @@ app.post(
 
 app.get(API_ENDPOINTS.GAMES, authenticateToken, controllers.games.getAll);
 app.get(API_ENDPOINTS.GAME, authenticateToken, controllers.games.get);
+
+// ERROR HANDLER -------------------------------------------------------------
+app.use(errorHandler);
 
 // Start the Express server
 app.listen(port, () => {

@@ -1,17 +1,18 @@
-import { type Request, type Response, type NextFunction } from "express";
+import type { NextFunction, Request, Response } from "express";
 import {
   type AnyObject,
   type Maybe,
   type ObjectSchema,
   type ValidationError,
 } from "yup";
+import { AppError } from "./AppError.js";
 
 /**
  * Creates an Express middleware function that validates the request body against a Yup schema.
  *
- * @template T - The type parameter extending Maybe<AnyObject> for the Yup schema
- * @param {ObjectSchema<object, T, object, "">} schema - The Yup schema to validate the request body against
- * @returns {(req: Request, res: Response, next: NextFunction) => Promise<Response | void>} An async Express middleware function that validates the request body
+ * @template T - The type extending Maybe<AnyObject> for the Yup schema
+ * @param {ObjectSchema<object, T, object, "">} schema - The Yup object schema to validate against
+ * @returns {Function} An async Express middleware function that validates req.body
  *
  * @example
  * ```typescript
@@ -19,10 +20,7 @@ import {
  * app.post('/users', validate(userSchema), (req, res) => { ... });
  * ```
  *
- * @remarks
- * - If validation succeeds, calls `next()` to proceed to the next middleware
- * - If validation fails, logs errors to console and returns a 400 status with error details
- * - Uses `abortEarly: false` to collect all validation errors at once
+ * @throws {AppError} Throws an AppError with status 400 if validation fails, containing all validation error messages
  */
 export const validate =
   <T extends Maybe<AnyObject>>(schema: ObjectSchema<object, T, object, "">) =>
@@ -31,14 +29,11 @@ export const validate =
       await schema.validate(req.body, { abortEarly: false }); // Validate the request body
       next();
     } catch (error: unknown) {
-      console.error(
-        `Validation error at ${req.path}:`,
-        (error as ValidationError).errors.join(),
+      return next(
+        new AppError(
+          `Validation error: ${(error as ValidationError).errors.join()}`,
+          400,
+        ),
       );
-
-      // Return validation errors
-      return res
-        .status(400)
-        .json({ errors: (error as ValidationError).errors });
     }
   };
