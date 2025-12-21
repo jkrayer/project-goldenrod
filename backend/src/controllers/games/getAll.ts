@@ -18,12 +18,10 @@ export const getAll = async (req: Request, res: Response) => {
   try {
     const rooms = await prisma.games.findMany();
 
-    res.status(200).json({ data: rooms });
+    return res.status(200).json({ data: rooms });
   } catch (error) {
     console.error("Error retrieving rooms:", error);
 
     return res.status(500).json({ error: "Internal server error" });
   }
-
-  return res;
 };

@@ -42,23 +42,14 @@ export const create = async (req: Request, res: Response) => {
   const { userRole } = res.locals;
 
   if (["ADMIN", "DM"].includes(userRole) === false) {
-    return res
-      .status(403)
-      .json({ error: "Forbidden: Only Admins and DMs can create game rooms" });
+    return res.status(403).json({
+      error:
+        "Insufficient permission: Only Admins and DMs can create game rooms",
+    });
   }
 
-  // get room data from request body
   const { name, description } = req.body;
 
-  // Sanitize room data
-  // to do, add xss sanitization
-
-  // validate room data
-  if (!name || !description) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
-  // add room to database
   try {
     const newRoom = await prisma.games.create({
       data: {
@@ -67,7 +58,6 @@ export const create = async (req: Request, res: Response) => {
       },
     });
 
-    // return success response
     return res.status(201).json({ data: newRoom });
   } catch (error) {
     console.error("Error creating room:", error);

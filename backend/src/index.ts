@@ -25,13 +25,14 @@ app.use(
   }),
 );
 
-// Define the root path with a greeting message
-// this should probably be moved to a health check endpoint later
+// ROUTES ----------------------------------------------------------------------
+
+// Home
 app.get("/", (req: Request, res: Response) => {
   res.json({ message: "Welcome to the Express + TypeScript Server!" });
 });
 
-// AUTH
+// Auth
 app.post(
   API_ENDPOINTS.REGISTER,
   validate<UserPayload>(userValidation),
@@ -50,7 +51,7 @@ app.get(
   controllers.users.verify,
 );
 
-// GAMES
+// Games
 app.post(
   API_ENDPOINTS.GAMES,
   authenticateToken,
@@ -60,7 +61,6 @@ app.post(
 );
 
 app.get(API_ENDPOINTS.GAMES, authenticateToken, controllers.games.getAll);
-
 app.get(API_ENDPOINTS.GAME, authenticateToken, controllers.games.get);
 
 // Start the Express server
