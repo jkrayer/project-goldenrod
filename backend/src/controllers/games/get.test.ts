@@ -83,7 +83,8 @@ describe("GET /api/games/:id", () => {
       .expect("Content-Type", /json/)
       .expect(404);
 
-    expect(response.body).toEqual({ error: "Room not found" });
+    expect(response.body.code).toBe(404);
+    expect(response.body.errors[0].message).toBe("Room not found");
   });
 
   it("should return 500 on database error", async () => {
@@ -100,7 +101,8 @@ describe("GET /api/games/:id", () => {
       .expect("Content-Type", /json/)
       .expect(500);
 
-    expect(response.body).toEqual({ error: "Can't find room Database error" });
+    expect(response.body.code).toBe(500);
+    expect(response.body.errors[0].message).toContain("Can't find room");
   });
 
   it("should return 403 when no token is provided", async () => {

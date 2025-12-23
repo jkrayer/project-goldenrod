@@ -1,4 +1,4 @@
-import express, { type Request, type Response } from "express";
+import express from "express";
 import cors from "cors";
 import {
   API_ENDPOINTS,
@@ -7,8 +7,9 @@ import {
   type Game,
   type UserPayload,
 } from "@project_goldenrod/shared";
-import { authenticateToken, errorHandler, validate } from "./lib/index.js";
 import controllers from "./controllers/index.js";
+import { authenticateToken, errorHandler, validate } from "./lib/index.js";
+import morganMiddleware from "./lib/middleware/morgan.js";
 
 // Create a new express application instance
 const app = express();
@@ -24,13 +25,9 @@ app.use(
     methods: ["GET", "POST", "PUT", "DELETE"],
   }),
 );
+app.use(morganMiddleware);
 
 // ROUTES ----------------------------------------------------------------------
-
-// Home
-app.get("/", (req: Request, res: Response) => {
-  res.json({ message: "Welcome to the Express + TypeScript Server!" });
-});
 
 // Auth
 app.post(
@@ -63,10 +60,14 @@ app.post(
 app.get(API_ENDPOINTS.GAMES, authenticateToken, controllers.games.getAll);
 app.get(API_ENDPOINTS.GAME, authenticateToken, controllers.games.get);
 
+// Rest
+app.all("{*splat}", controllers.all);
+
 // ERROR HANDLER -------------------------------------------------------------
 app.use(errorHandler);
 
 // Start the Express server
 app.listen(port, () => {
+  console.log(`Running application in environment: ${process.env.NODE_ENV}`);
   console.log(`The server is running on port: ${port}`);
 });

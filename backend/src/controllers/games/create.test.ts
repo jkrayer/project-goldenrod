@@ -124,10 +124,18 @@ describe("POST /api/games/", () => {
       .expect("Content-Type", /json/)
       .expect(403);
 
-    expect(response.body).toEqual({
-      error:
-        "Insufficient permission: Only Admins and DMs can create game rooms",
+    expect(response.body).toMatchObject({
+      code: 403,
+      status: "FORBIDDEN",
+      errors: [
+        {
+          type: "PermissionDenied",
+          message:
+            "Insufficient permission: Only Admins and DMs can create game rooms",
+        },
+      ],
     });
+    expect(response.body.timestamp).toBeDefined();
     expect(mockCreate).not.toHaveBeenCalled();
   });
 
@@ -182,7 +190,17 @@ describe("POST /api/games/", () => {
       .expect("Content-Type", /json/)
       .expect(500);
 
-    expect(response.body.error).toContain("Error creating room");
+    expect(response.body).toMatchObject({
+      code: 500,
+      status: "INTERNAL_SERVER_ERROR",
+      errors: [
+        {
+          type: "DatabaseError",
+        },
+      ],
+    });
+    expect(response.body.errors[0].message).toContain("Error creating room");
+    expect(response.body.timestamp).toBeDefined();
     expect(mockCreate).toHaveBeenCalled();
   });
 
@@ -202,7 +220,17 @@ describe("POST /api/games/", () => {
       .expect("Content-Type", /json/)
       .expect(500);
 
-    expect(response.body.error).toContain("Error creating room");
+    expect(response.body).toMatchObject({
+      code: 500,
+      status: "INTERNAL_SERVER_ERROR",
+      errors: [
+        {
+          type: "DatabaseError",
+        },
+      ],
+    });
+    expect(response.body.errors[0].message).toContain("Error creating room");
+    expect(response.body.timestamp).toBeDefined();
     expect(mockCreate).toHaveBeenCalled();
   });
 });

@@ -102,9 +102,8 @@ describe("GET /api/games/", () => {
       .expect("Content-Type", /json/)
       .expect(500);
 
-    expect(response.body).toEqual({
-      error: "Error retrieving rooms: Database error",
-    });
+    expect(response.body.code).toBe(500);
+    expect(response.body.errors[0].message).toContain("Error retrieving rooms");
   });
 
   it("should return 403 when no token is provided", async () => {

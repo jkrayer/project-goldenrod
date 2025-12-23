@@ -5,7 +5,7 @@ import {
   type ObjectSchema,
   type ValidationError,
 } from "yup";
-import { AppError } from "./AppError.js";
+import { FieldErrors } from "./AppError.js";
 
 /**
  * Creates an Express middleware function that validates the request body against a Yup schema.
@@ -29,10 +29,15 @@ export const validate =
       await schema.validate(req.body, { abortEarly: false }); // Validate the request body
       next();
     } catch (error: unknown) {
+      console.log("V", error);
+
       return next(
-        new AppError(
-          `Validation error: ${(error as ValidationError).errors.join()}`,
+        FieldErrors(
           400,
+          (error as ValidationError).errors.map((message) => ({
+            message,
+            field: message.split(" ")[0] || "unknown",
+          })),
         ),
       );
     }

@@ -8,6 +8,7 @@ import { AppError, prisma } from "../../lib/index.js";
  * @param req.body.name - The name of the game room (required)
  * @param req.body.description - The description of the game room (required)
  * @param res - Express response object
+ * @param next - Express next function for error handling middleware
  *
  * @returns A promise that resolves to the Express response object
  *
@@ -17,8 +18,8 @@ import { AppError, prisma } from "../../lib/index.js";
  * - Creates a new game room entry in the database using Prisma
  * - Returns appropriate HTTP status codes based on the outcome
  *
- * @throws Returns 400 Bad Request if required fields are missing
- * @throws Returns 500 Internal Server Error if database operation fails
+ * @throws {AppError} 403 - If user lacks permission (must be ADMIN or DM)
+ * @throws {AppError} 500 - If database operation fails
  *
  * @example
  * ```typescript
@@ -47,9 +48,10 @@ export const create = async (
 
   if (["ADMIN", "DM"].includes(userRole) === false) {
     return next(
-      new AppError(
-        "Insufficient permission: Only Admins and DMs can create game rooms",
+      AppError(
         403,
+        "PermissionDenied",
+        "Insufficient permission: Only Admins and DMs can create game rooms",
       ),
     );
   }
@@ -67,9 +69,10 @@ export const create = async (
     return res.status(201).json({ data: newRoom });
   } catch (error) {
     return next(
-      new AppError(
-        `Error creating room: ${error instanceof Error ? error.message : String(error)}`,
+      AppError(
         500,
+        "DatabaseError",
+        `Error creating room: ${error instanceof Error ? error.message : String(error)}`,
       ),
     );
   }

@@ -95,9 +95,10 @@ describe("POST /api/users/login ", () => {
       .expect("Content-Type", /json/)
       .expect(401);
 
-    expect(response.body).toEqual({
-      error: "User with email nonexistent@example.com not found",
-    });
+    expect(response.body.code).toBe(401);
+    expect(response.body.errors[0].message).toContain(
+      "User with email nonexistent@example.com not found",
+    );
     expect(mockCompare).not.toHaveBeenCalled();
     expect(mockGenerateToken).not.toHaveBeenCalled();
   });
@@ -120,9 +121,10 @@ describe("POST /api/users/login ", () => {
       .expect("Content-Type", /json/)
       .expect(401);
 
-    expect(response.body).toEqual({
-      error: "Incorrect password for user with email testuser@example.com",
-    });
+    expect(response.body.code).toBe(401);
+    expect(response.body.errors[0].message).toContain(
+      "Incorrect password for user with email testuser@example.com",
+    );
     expect(mockCompare).toHaveBeenCalledWith(
       "wrongpassword",
       "$2b$10$hashedpassword",
@@ -139,7 +141,8 @@ describe("POST /api/users/login ", () => {
       .expect("Content-Type", /json/)
       .expect(400);
 
-    expect(response.body).toEqual({ error: "Login failed Database error" });
+    expect(response.body.code).toBe(400);
+    expect(response.body.errors[0].message).toContain("Login failed");
     expect(mockGenerateToken).not.toHaveBeenCalled();
   });
 });

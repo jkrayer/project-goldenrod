@@ -57,15 +57,18 @@ export const register = async (
       return res.status(201).json({ data: "User created successfully." });
     } catch (prismaError: unknown) {
       if (isPrismaError(prismaError) && prismaError.code === "P2002") {
-        return next(new AppError("User already exists.", 409));
+        return next(AppError(409, "DatabaseError", "User already exists."));
       } else {
-        return next(new AppError("Internal server error", 500));
+        return next(AppError(500, "DatabaseError", "Internal server error"));
       }
     }
   } catch (hashError: unknown) {
-    // Additional logging for hashing errors
-    console.error("Error hashing password:", hashError);
-
-    return next(new AppError("Internal server error", 500));
+    return next(
+      AppError(
+        500,
+        "PasswordHashingError",
+        hashError instanceof Error ? hashError.message : String(hashError),
+      ),
+    );
   }
 };

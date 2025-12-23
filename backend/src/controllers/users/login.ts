@@ -40,7 +40,11 @@ export const login = async (
 
     if (!user) {
       return next(
-        new AppError(`User with email ${req.body.email} not found`, 401),
+        AppError(
+          401,
+          "UserNotFound",
+          `User with email ${req.body.email} not found`,
+        ),
       );
     }
 
@@ -50,9 +54,10 @@ export const login = async (
 
     if (!match) {
       return next(
-        new AppError(
-          `Incorrect password for user with email ${req.body.email}`,
+        AppError(
           401,
+          "InvalidCredentials",
+          `Incorrect password for user with email ${req.body.email}`,
         ),
       );
     }
@@ -62,9 +67,10 @@ export const login = async (
     return res.status(200).json({ data, token });
   } catch (error: unknown) {
     return next(
-      new AppError(
-        `Login failed ${error instanceof Error ? error.message : String(error)}`,
+      AppError(
         400,
+        "LoginFailed",
+        `Login failed ${error instanceof Error ? error.message : String(error)}`,
       ),
     );
   }

@@ -101,7 +101,8 @@ describe("POST /api/users/register ", () => {
       .expect("Content-Type", /json/)
       .expect(409);
 
-    expect(response.body).toEqual({ error: "User already exists." });
+    expect(response.body.code).toBe(409);
+    expect(response.body.errors[0].message).toBe("User already exists.");
     expect(mockIsPrismaError).toHaveBeenCalledWith(prismaError);
   });
 
@@ -122,8 +123,7 @@ describe("POST /api/users/register ", () => {
       .expect("Content-Type", /json/)
       .expect(500);
 
-    expect(response.body).toEqual({
-      error: "Internal server error",
-    });
+    expect(response.body.code).toBe(500);
+    expect(response.body.errors[0].message).toBe("Internal server error");
   });
 });
