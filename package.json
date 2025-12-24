@@ -11,7 +11,9 @@
   ],
   "scripts": {
     "prepare": "husky",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "npm run --workspaces test",
+    "lint": "npm run --workspaces lint",
+    "format": "prettier --write ."
   },
   "keywords": [],
   "author": "James Krayer <jameskrayer@yahoo.com>",
