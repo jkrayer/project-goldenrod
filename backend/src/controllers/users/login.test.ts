@@ -73,8 +73,8 @@ describe("POST /api/users/login ", () => {
         userName: "TestUser",
         email: "testuser@example.com",
         role: "PLAYER",
+        token: "mock-jwt-token",
       },
-      token: "mock-jwt-token",
     });
     expect(mockFindUnique).toHaveBeenCalledWith({
       where: { email: "testuser@example.com" },

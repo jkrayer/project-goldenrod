@@ -64,7 +64,7 @@ export const login = async (
 
     const token = generateToken({ id, role: user.role });
 
-    return res.status(200).json({ data, token });
+    return res.status(200).json({ data: { ...data, token } });
   } catch (error: unknown) {
     return next(
       AppError(

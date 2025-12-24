@@ -18,7 +18,7 @@ export const games = createApi({
     },
   }),
   endpoints: (builder) => ({
-    getAll: builder.query<Game[], void>({
+    getAllGames: builder.query<Game[], void>({
       query: () => ({ url: `games`, method: "GET" }),
       transformResponse: (response: { data: Game[] }) => response.data,
     }),
@@ -35,4 +35,4 @@ export const games = createApi({
   }),
 });
 
-export const { useGetAllQuery, useGetOneQuery, useCreateMutation } = games;
+export const { useGetAllGamesQuery, useGetOneQuery, useCreateMutation } = games;

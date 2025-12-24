@@ -1,6 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
   API_ENDPOINTS,
+  type ErrorResponse,
+  type SuccessResponse,
   type User,
   type UserPayload,
 } from "@project_goldenrod/shared";
@@ -20,7 +22,7 @@ export const login = createAsyncThunk<
       },
     );
 
-    let data;
+    let data: SuccessResponse<User> | ErrorResponse;
 
     try {
       data = await response.json();
@@ -38,7 +40,7 @@ export const login = createAsyncThunk<
         return rejectWithValue(`Login is not OK: ${response.statusText}`);
       }
     } else {
-      return data as User;
+      return (data as SuccessResponse<User>).data;
     }
   } catch (error: unknown) {
     throw new Error(

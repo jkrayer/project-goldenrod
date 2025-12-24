@@ -38,7 +38,7 @@ export const userSlice = createSlice<
       })
       .addCase(login.fulfilled, (state, action: PayloadAction<User>) => {
         state.status = "succeeded";
-        state.data = action.payload;
+        state.data = { ...state.data, ...action.payload };
       })
       .addCase(login.rejected, (state) => {
         state.status = "failed";

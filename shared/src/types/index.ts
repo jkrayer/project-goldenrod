@@ -11,6 +11,10 @@ export type ErrorResponse = {
   errors: Err[];
 };
 
+export type SuccessResponse<T> = {
+  data: T;
+};
+
 type ROLE = "ADMIN" | "DM" | "PLAYER";
 
 export type UserPayload = {
