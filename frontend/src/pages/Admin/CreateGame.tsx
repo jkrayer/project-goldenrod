@@ -1,24 +1,36 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { type FetchBaseQueryError } from "@reduxjs/toolkit/query/react";
-import type { ErrorResponse } from "@project_goldenrod/shared";
+import {
+  gameValidation,
+  type ErrorResponse,
+  type GamePayload,
+} from "@project_goldenrod/shared";
 import { Button } from "../../components/Button";
 import { Form } from "../../components/Form";
 import { Field } from "../../components/FormFields";
 import { LOBBY_PATH } from "../../routes/routes";
 import { useCreateGameMutation } from "../../store/games/slice";
+import { useErrorState } from "../../lib/hooks";
 
 export default function Admin() {
   // STATE
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const { errors, handleBlur, onBeforeSubmit, isFormValid } = useErrorState(
+    { name, description },
+    gameValidation,
+  );
 
   // HOOKS
   const [createGame, { error, isError, isLoading, isSuccess }] =
     useCreateGameMutation();
 
-  // e: React.FormEvent
-  const handleSubmit = () => createGame({ name, description });
+  const handleSubmit = async () => {
+    onBeforeSubmit()
+      .then((state: GamePayload) => createGame(state))
+      .catch(() => {});
+  };
 
   //   EFFECTS
   useEffect(() => {
@@ -46,27 +58,30 @@ export default function Admin() {
     <>
       {SERVER_ERRORS}
       <Form onSubmit={handleSubmit}>
-        <Field.Root id="name" required>
+        <Field.Root id="name" required hasError={!!errors?.name}>
           <Field.Label>Name</Field.Label>
           <Field.Input
             type="text"
             name="name"
             value={name}
+            onBlur={handleBlur("name")}
             onChange={(e) => setName(e.target.value)}
             aria-disabled={isLoading}
           />
-          <Field.Error>Please enter a valid name.</Field.Error>
+          <Field.Error>{errors?.name}</Field.Error>
         </Field.Root>
-        <Field.Root id="description">
+        <Field.Root id="description" hasError={!!errors?.description}>
           <Field.Label>Description</Field.Label>
           <Field.TextArea
             name="description"
             value={description}
+            onBlur={handleBlur("description")}
             onChange={(e) => setDescription(e.target.value)}
             aria-disabled={isLoading}
           />
+          <Field.Error>{errors?.description}</Field.Error>
         </Field.Root>
-        <Button type="submit" aria-disabled={isLoading}>
+        <Button type="submit" aria-disabled={isLoading || !isFormValid}>
           Create Game
         </Button>
       </Form>
