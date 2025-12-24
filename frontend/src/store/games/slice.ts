@@ -1,12 +1,12 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { type Game } from "@project_goldenrod/shared";
+import { type Game, type GamePayload } from "@project_goldenrod/shared";
 import type { RootState } from "../store";
 
 // Game
-
 export const games = createApi({
   reducerPath: "games",
   // trying: https://redux-toolkit.js.org/rtk-query/api/fetchBaseQuery
+  // BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError, {}, FetchBaseQueryMeta>
   baseQuery: fetchBaseQuery({
     baseUrl: `http://localhost:3000/api/`,
     prepareHeaders: (headers, { getState }) => {
@@ -17,15 +17,15 @@ export const games = createApi({
       return headers;
     },
   }),
-  endpoints: (builder) => ({
-    getAllGames: builder.query<Game[], void>({
+  endpoints: (build) => ({
+    getAllGames: build.query<Game[], void>({
       query: () => ({ url: `games`, method: "GET" }),
       transformResponse: (response: { data: Game[] }) => response.data,
     }),
-    getOne: builder.query<Game, number>({
+    getOne: build.query<Game, number>({
       query: (id: number) => ({ url: `games/${id}`, method: "GET" }),
     }),
-    create: builder.mutation<Game, Omit<Game, "id">>({
+    createGame: build.mutation<Game, GamePayload>({
       query: (body) => ({
         url: `games`,
         method: "POST",
@@ -35,4 +35,5 @@ export const games = createApi({
   }),
 });
 
-export const { useGetAllGamesQuery, useGetOneQuery, useCreateMutation } = games;
+export const { useGetAllGamesQuery, useGetOneQuery, useCreateGameMutation } =
+  games;

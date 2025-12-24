@@ -44,7 +44,7 @@ export const create = async (
   res: Response,
   next: NextFunction,
 ) => {
-  const { userRole } = res.locals;
+  const { userRole, userId } = res.locals;
 
   if (["ADMIN", "DM"].includes(userRole) === false) {
     return next(
@@ -63,6 +63,7 @@ export const create = async (
       data: {
         name,
         description,
+        userId,
       },
     });
 

@@ -4,7 +4,7 @@ import {
   API_ENDPOINTS,
   gameValidation,
   userValidation,
-  type Game,
+  type GamePayload,
   type UserPayload,
 } from "@project_goldenrod/shared";
 import controllers from "./controllers/index.js";
@@ -52,8 +52,7 @@ app.get(
 app.post(
   API_ENDPOINTS.GAMES,
   authenticateToken,
-  // @ts-expect-error - to fix later
-  validate<Game>(gameValidation),
+  validate<GamePayload>(gameValidation),
   controllers.games.create,
 );
 

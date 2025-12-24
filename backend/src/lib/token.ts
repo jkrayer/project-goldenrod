@@ -2,6 +2,8 @@ import type { Request, Response, NextFunction } from "express";
 import { compose, pathOr, propOr, split } from "ramda";
 import jwt from "jsonwebtoken";
 import type { User } from "@project_goldenrod/shared";
+import { AppError } from "./AppError.js";
+import { prisma } from "./prisma.js";
 
 const SECRET = process.env.JWT_SECRET || "dangerous_default_secret";
 
@@ -60,25 +62,44 @@ export const generateToken = (payload: { id: number; role: User["role"] }) =>
  * @returns Sends a 403 response with error message if authentication fails,
  *          otherwise calls next() to continue to the next middleware
  */
-export function authenticateToken(
+export async function authenticateToken(
   req: Request,
   res: Response,
   next: NextFunction,
 ) {
   const token = getToken(req);
+  let numericId: number | undefined;
 
   jwt.verify(token, SECRET, { algorithms: ["HS256"] }, (err, decoded) => {
     if (err) {
-      console.error("Error, Invalid or expired token:", err);
-      return res.status(403).json({ message: "Invalid or expired token" });
+      return next(AppError(403, "InvalidToken", "Invalid or expired token"));
     } else if (!decoded || typeof decoded === "string") {
-      console.error("Error, Invalid token payload:", decoded);
-      return res.status(403).json({ message: "Invalid token payload" });
+      return next(AppError(403, "InvalidToken", "Invalid token payload"));
     }
 
-    res.locals.userId = decoded?.id || -1;
-    res.locals.userRole = decoded?.role || "user";
+    const questionableId = (decoded as { id?: unknown }).id;
 
-    next();
+    if (typeof questionableId !== "number" || isNaN(questionableId)) {
+      return next(
+        AppError(403, "InvalidToken", "Token payload contains invalid ID"),
+      );
+    } else {
+      numericId = questionableId;
+    }
   });
+
+  const user = await prisma.user.findUnique({
+    where: { id: numericId! },
+  });
+
+  if (!user) {
+    return next(
+      AppError(403, "InvalidToken", "User associated with token not found"),
+    );
+  }
+
+  res.locals.userId = user.id;
+  res.locals.userRole = user.role;
+
+  next();
 }

@@ -28,8 +28,13 @@ export type User = Omit<UserPayload, "password"> & {
   token: string;
 };
 
-export type Game = {
-  id: number;
+export type GamePayload = {
   name: string;
   description: string;
+};
+
+export type Game = GamePayload & {
+  id: number;
+  userId: number;
+  createdAt: string;
 };

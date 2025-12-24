@@ -25,3 +25,5 @@ PosgreSQL, Prisma
 | id          | int  |
 | name        | text |
 | description | text |
+| userId      | int  |
+| createdAt   | date |
