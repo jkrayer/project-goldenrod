@@ -24,7 +24,7 @@ model User {
 
 model Games {
   id          Int      @id @default(autoincrement())
-  name        String
+  name        String   @unique @db.VarChar(50)
   description String
   user        User     @relation(fields: [userId], references: [id])
   userId      Int
