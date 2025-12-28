@@ -27,3 +27,11 @@ PosgreSQL, Prisma
 | description | text |
 | userId      | int  |
 | createdAt   | date |
+
+### games-users
+
+| field  | type |
+| ------ | ---- |
+| id     | int  |
+| gameId | int  |
+| userId | int  |

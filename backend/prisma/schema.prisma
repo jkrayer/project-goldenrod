@@ -20,6 +20,7 @@ model User {
   password String  @db.VarChar(72)
   role     Role    @default(PLAYER)
   games    Games[]
+  userGames UserGames[]
 }
 
 model Games {
@@ -29,10 +30,19 @@ model Games {
   user        User     @relation(fields: [userId], references: [id])
   userId      Int
   createdAt   DateTime @default(now())
+  userGames UserGames[]
 }
 
 enum Role {
   ADMIN
   DM
   PLAYER
+}
+
+model UserGames {
+  id      Int   @id @default(autoincrement())
+  user    User  @relation(fields: [userId], references: [id])
+  userId  Int
+  game    Games @relation(fields: [gameId], references: [id])
+  gameId  Int
 }
