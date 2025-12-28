@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { type Game, type GamePayload } from "@project_goldenrod/shared";
+import type { Game, GamePayload } from "@project_goldenrod/shared";
 import type { RootState } from "../store";
 
 // Game
@@ -24,6 +24,7 @@ export const games = createApi({
     }),
     getOne: build.query<Game, number>({
       query: (id: number) => ({ url: `games/${id}`, method: "GET" }),
+      transformResponse: (response: { data: Game }) => response.data,
     }),
     createGame: build.mutation<Game, GamePayload>({
       query: (body) => ({
