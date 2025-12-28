@@ -2,31 +2,23 @@ import type { NextFunction, Request, Response } from "express";
 import { AppError, prisma } from "../../lib/index.js";
 
 /**
- * Retrieves a game room by its ID from the database.
+ * Retrieves a specific game by ID for the authenticated user.
  *
- * @param req - Express request object containing the room ID in params
- * @param req.params.id - The unique identifier of the game room to retrieve
- * @param res - Express response object used to send back the room data or error messages
- * @param next - Express next function for error handling middleware
+ * This endpoint validates that the user has access to the requested game by checking
+ * the UserGames relationship, then returns the game details if access is granted.
  *
- * @returns A promise that resolves to the Express response object
+ * @param req - Express request object containing the game ID in params
+ * @param req.params.id - The unique identifier of the game to retrieve
+ * @param res - Express response object with userId in locals
+ * @param res.locals.userId - The authenticated user's ID
+ * @param next - Express next function for error handling
  *
- * @throws {AppError} 400 - When the id parameter is missing from the request
- * @throws {AppError} 404 - When no room is found with the specified id
- * @throws {AppError} 500 - When a database error or internal server error occurs
+ * @returns A JSON response with the game data on success (status 200)
  *
- * @remarks
- * This function performs the following operations:
- * 1. Extracts the room ID from request parameters
- * 2. Validates that the ID is present
- * 3. Queries the database for a game room with the matching ID
- * 4. Returns the room data if found, or an appropriate error response
- *
- * @example
- * ```typescript
- * // GET /games/123
- * // Response: { data: { id: 123, ...otherRoomProperties } }
- * ```
+ * @throws {AppError} 400 BadRequest - When the game ID is missing from request parameters
+ * @throws {AppError} 403 Forbidden - When the user doesn't have access to the requested game
+ * @throws {AppError} 404 NotFound - When the game with the specified ID doesn't exist
+ * @throws {AppError} 500 DatabaseError - When database operations fail during user/game relationship lookup or game retrieval
  */
 export const get = async (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
@@ -35,6 +27,29 @@ export const get = async (req: Request, res: Response, next: NextFunction) => {
   if (!id) {
     return next(
       AppError(400, "BadRequest", "Missing id in request parameters."),
+    );
+  }
+
+  try {
+    const { userId } = res.locals;
+
+    const userGame = await prisma.userGames.findFirst({
+      where: {
+        userId: userId,
+        gameId: Number(id),
+      },
+    });
+
+    if (userGame === null) {
+      return next(AppError(403, "Forbidden", "Access to this game is denied"));
+    }
+  } catch (error) {
+    return next(
+      AppError(
+        500,
+        "DatabaseError",
+        `Can't find user/game relationship ${error instanceof Error ? error.message : String(error)}`,
+      ),
     );
   }
 
