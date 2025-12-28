@@ -13,15 +13,20 @@ import { AppError, prisma } from "../../lib/index.js";
  * @throws {AppError} 500 - When a database error occurs
  *
  * @remarks
- * This function queries the `games` table using Prisma ORM to fetch all game records.
+ * This function queries the `games` table using Prisma ORM to fetch all game
+ * records accessible to the current authenticated user.
  */
 export const getAll = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ) => {
+  const { userId } = res.locals;
+
   try {
-    const rooms = await prisma.games.findMany();
+    const rooms = await prisma.games.findMany({
+      where: { userGames: { some: { userId } } },
+    });
 
     return res.status(200).json({ data: rooms });
   } catch (error) {

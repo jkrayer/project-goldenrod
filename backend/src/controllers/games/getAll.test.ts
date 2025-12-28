@@ -1,139 +1,103 @@
-import express from "express";
-import request from "supertest";
+import type { Request, Response, NextFunction } from "express";
 import { describe, it, expect, jest, beforeEach } from "@jest/globals";
+import { getAll } from "./getAll.js";
+import { prisma } from "../../lib/index.js";
 
-// Mock prisma before importing the controller
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockFindMany = jest.fn<any>();
-
-jest.unstable_mockModule("../../lib/prisma.js", () => ({
+jest.mock("../../lib/index.js", () => ({
   prisma: {
     games: {
-      findMany: mockFindMany,
+      findMany: jest.fn(),
     },
   },
+  AppError: jest.fn((status, type, message) => ({
+    status,
+    type,
+    message,
+  })),
 }));
 
-// Mock JWT verification
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockVerify = jest.fn<any>();
+describe("getAll", () => {
+  let mockRequest: Partial<Request>;
+  let mockResponse: Partial<Response>;
+  let mockNext: NextFunction;
 
-jest.unstable_mockModule("jsonwebtoken", () => ({
-  default: {
-    verify: mockVerify,
-  },
-}));
-
-// Import after mocking
-const { getAll } = await import("./getAll.js");
-const { errorHandler } = await import("../../lib/errorHandler.js");
-const { authenticateToken } = await import("../../lib/token.js");
-
-// Create a new express application instance
-const app = express();
-app.use(express.json()); // Add JSON body parser
-app.use(authenticateToken); // Add authentication middleware
-app.get("/api/games/", getAll);
-app.use(errorHandler); // Add error handler middleware
-
-describe("GET /api/games/", () => {
   beforeEach(() => {
+    mockRequest = {};
+    mockResponse = {
+      locals: { userId: "user-123" },
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
+    mockNext = jest.fn();
     jest.clearAllMocks();
-    // Suppress console.error during tests
-    jest.spyOn(console, "error").mockImplementation(() => {});
+    (prisma.games.findMany as jest.Mock) = jest.fn();
   });
 
-  it("should return all game rooms with 200 status", async () => {
-    //@ts-expect-error - Mock JWT verification
-    mockVerify.mockImplementation((token, secret, options, callback) => {
-      callback(null, { id: 1, role: "PLAYER" });
-    });
-
-    const mockRooms = [
-      {
-        id: "1",
-        name: "Room 1",
-        description: "First Room",
-      },
-      { id: "2", name: "Room 2", description: "Second Room" },
+  it("should return all games for authenticated user", async () => {
+    const mockGames = [
+      { id: "game-1", name: "Game 1" },
+      { id: "game-2", name: "Game 2" },
     ];
 
-    mockFindMany.mockResolvedValue(mockRooms);
+    (prisma.games.findMany as jest.Mock).mockResolvedValue(mockGames);
 
-    const response = await request(app)
-      .get("/api/games/")
-      .set("Authorization", "Bearer valid-token")
-      .expect("Content-Type", /json/)
-      .expect(200);
+    await getAll(mockRequest as Request, mockResponse as Response, mockNext);
 
-    expect(response.body).toEqual({ data: mockRooms });
-    expect(mockFindMany).toHaveBeenCalledTimes(1);
+    expect(prisma.games.findMany).toHaveBeenCalledWith({
+      where: { userGames: { some: { userId: "user-123" } } },
+    });
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.json).toHaveBeenCalledWith({ data: mockGames });
+    expect(mockNext).not.toHaveBeenCalled();
   });
 
-  it("should return empty array when no game rooms exist", async () => {
-    //@ts-expect-error - Mock JWT verification
-    mockVerify.mockImplementation((token, secret, options, callback) => {
-      callback(null, { id: 1, role: "PLAYER" });
-    });
+  it("should return empty array when no games found", async () => {
+    (prisma.games.findMany as jest.Mock).mockResolvedValue([]);
 
-    mockFindMany.mockResolvedValue([]);
+    await getAll(mockRequest as Request, mockResponse as Response, mockNext);
 
-    const response = await request(app)
-      .get("/api/games/")
-      .set("Authorization", "Bearer valid-token")
-      .expect("Content-Type", /json/)
-      .expect(200);
-
-    expect(mockFindMany).toHaveBeenCalledTimes(1);
-    expect(response.body).toEqual({ data: [] });
+    expect(mockResponse.status).toHaveBeenCalledWith(200);
+    expect(mockResponse.json).toHaveBeenCalledWith({ data: [] });
+    expect(mockNext).not.toHaveBeenCalled();
   });
 
-  it("should return 500 status on database error", async () => {
-    //@ts-expect-error - Mock JWT verification
-    mockVerify.mockImplementation((token, secret, options, callback) => {
-      callback(null, { id: 1, role: "PLAYER" });
+  it("should call next with AppError when database error occurs", async () => {
+    const dbError = new Error("Database connection failed");
+    (prisma.games.findMany as jest.Mock).mockRejectedValue(dbError);
+
+    await getAll(mockRequest as Request, mockResponse as Response, mockNext);
+
+    expect(mockNext).toHaveBeenCalledWith({
+      code: 500,
+      status: "INTERNAL_SERVER_ERROR",
+      timestamp: expect.any(String),
+      errors: [
+        {
+          type: "DatabaseError",
+          message: "Error retrieving rooms: Database connection failed",
+        },
+      ],
     });
-
-    mockFindMany.mockRejectedValue(new Error("Database error"));
-
-    const response = await request(app)
-      .get("/api/games/")
-      .set("Authorization", "Bearer valid-token")
-      .expect("Content-Type", /json/)
-      .expect(500);
-
-    expect(response.body.code).toBe(500);
-    expect(response.body.errors[0].message).toContain("Error retrieving rooms");
+    expect(mockResponse.status).not.toHaveBeenCalled();
+    expect(mockResponse.json).not.toHaveBeenCalled();
   });
 
-  it("should return 403 when no token is provided", async () => {
-    //@ts-expect-error - Mock JWT verification
-    mockVerify.mockImplementation((token, secret, options, callback) => {
-      callback(new Error("jwt must be provided"), null);
+  it("should handle non-Error exceptions", async () => {
+    // @ts-expect-error Testing non-Error throw
+    (prisma.games.findMany as jest.Mock).mockRejectedValue("Unknown error");
+
+    await getAll(mockRequest as Request, mockResponse as Response, mockNext);
+
+    expect(mockNext).toHaveBeenCalledWith({
+      code: 500,
+      status: "INTERNAL_SERVER_ERROR",
+      timestamp: expect.any(String),
+      errors: [
+        {
+          type: "DatabaseError",
+          message: "Error retrieving rooms: Unknown error",
+        },
+      ],
     });
-
-    const response = await request(app)
-      .get("/api/games/")
-      .expect("Content-Type", /json/)
-      .expect(403);
-
-    expect(response.body).toEqual({ message: "Invalid or expired token" });
-    expect(mockFindMany).not.toHaveBeenCalled();
-  });
-
-  it("should return 403 when an invalid token is provided", async () => {
-    //@ts-expect-error - Mock JWT verification
-    mockVerify.mockImplementation((token, secret, options, callback) => {
-      callback(new Error("invalid token"), null);
-    });
-
-    const response = await request(app)
-      .get("/api/games/")
-      .set("Authorization", "Bearer invalid-token")
-      .expect("Content-Type", /json/)
-      .expect(403);
-
-    expect(response.body).toEqual({ message: "Invalid or expired token" });
-    expect(mockFindMany).not.toHaveBeenCalled();
   });
 });
