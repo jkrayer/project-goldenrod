@@ -14,15 +14,35 @@ datasource db {
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  email    String  @unique
-  userName String? @unique @db.VarChar(30)
-  password String  @db.VarChar(72)
+  id             Int              @id @default(autoincrement())
+  email          String           @unique
+  userName       String?          @unique @db.VarChar(30)
+  password       String           @db.VarChar(72)
+  sessions       Sessions[]
+  sessionMembers SessionMembers[]
 }
 
-// enum Role {
-//   ADMIN
-//   DM
-//   PLAYER
-// }
+model Sessions {
+  id             Int              @id @default(autoincrement())
+  name           String           @db.VarChar(100)
+  createdBy      Int
+  createdAt      DateTime         @default(now())
+  user           User             @relation(fields: [createdBy], references: [id])
+  sessionMembers SessionMembers[]
+}
 
+model SessionMembers {
+  sessionId Int
+  userId    Int
+  role      Role     @default(PLAYER)
+  joinedAt  DateTime @default(now())
+  session   Sessions @relation(fields: [sessionId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([sessionId, userId])
+}
+
+enum Role {
+  REFEREE
+  PLAYER
+}
