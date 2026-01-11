@@ -3,6 +3,8 @@ import cors from "cors";
 import {
   API_ENDPOINTS,
   userValidation,
+  sessionValidation,
+  type SessionPayload,
   type UserPayload,
 } from "@project_goldenrod/shared";
 import controllers from "./controllers/index.js";
@@ -27,7 +29,7 @@ app.use(morganMiddleware);
 
 // ROUTES ----------------------------------------------------------------------
 
-// Auth
+// AUTH  --------------------
 app.post(
   API_ENDPOINTS.REGISTER,
   validate<UserPayload>(userValidation),
@@ -46,7 +48,23 @@ app.get(
   controllers.users.verify,
 );
 
-// Rest
+// SESSIONS --------------------
+app.post(
+  API_ENDPOINTS.SESSIONS,
+  authenticateToken,
+  validate<SessionPayload>(sessionValidation),
+  controllers.sessions.create,
+);
+
+app.get(API_ENDPOINTS.SESSION, authenticateToken, controllers.sessions.getById);
+
+app.post(
+  API_ENDPOINTS.SESSION_JOIN,
+  authenticateToken,
+  controllers.sessions.join,
+);
+
+// REST  --------------------
 app.all("{*splat}", controllers.all);
 
 // ERROR HANDLER -------------------------------------------------------------
