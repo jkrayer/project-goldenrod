@@ -2,9 +2,7 @@ import express from "express";
 import cors from "cors";
 import {
   API_ENDPOINTS,
-  gameValidation,
   userValidation,
-  type GamePayload,
   type UserPayload,
 } from "@project_goldenrod/shared";
 import controllers from "./controllers/index.js";
@@ -47,17 +45,6 @@ app.get(
   authenticateToken,
   controllers.users.verify,
 );
-
-// Games
-app.post(
-  API_ENDPOINTS.GAMES,
-  authenticateToken,
-  validate<GamePayload>(gameValidation),
-  controllers.games.create,
-);
-
-app.get(API_ENDPOINTS.GAMES, authenticateToken, controllers.games.getAll);
-app.get(API_ENDPOINTS.GAME, authenticateToken, controllers.games.get);
 
 // Rest
 app.all("{*splat}", controllers.all);

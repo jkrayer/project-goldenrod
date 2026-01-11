@@ -55,7 +55,6 @@ describe("POST /api/users/login ", () => {
       userName: "TestUser",
       email: "testuser@example.com",
       password: "$2b$10$hashedpassword",
-      role: "PLAYER",
     };
 
     mockFindUnique.mockResolvedValue(mockUser);
@@ -72,18 +71,20 @@ describe("POST /api/users/login ", () => {
       data: {
         userName: "TestUser",
         email: "testuser@example.com",
-        role: "PLAYER",
         token: "mock-jwt-token",
       },
     });
+
     expect(mockFindUnique).toHaveBeenCalledWith({
       where: { email: "testuser@example.com" },
     });
+
     expect(mockCompare).toHaveBeenCalledWith(
       "password123",
       "$2b$10$hashedpassword",
     );
-    expect(mockGenerateToken).toHaveBeenCalledWith({ id: 1, role: "PLAYER" });
+
+    expect(mockGenerateToken).toHaveBeenCalledWith({ id: 1 });
   });
 
   it("should return 401 when user not found", async () => {
@@ -109,7 +110,6 @@ describe("POST /api/users/login ", () => {
       userName: "TestUser",
       email: "testuser@example.com",
       password: "$2b$10$hashedpassword",
-      role: "PLAYER",
     };
 
     mockFindUnique.mockResolvedValue(mockUser);

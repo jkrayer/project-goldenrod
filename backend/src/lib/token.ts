@@ -1,7 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import { compose, pathOr, propOr, split } from "ramda";
 import jwt from "jsonwebtoken";
-import type { User } from "@project_goldenrod/shared";
 import { AppError } from "./AppError.js";
 import { prisma } from "./prisma.js";
 
@@ -24,12 +23,11 @@ const getToken = compose<[Request], string, string[], string>(
 /**
  * Generates a JWT token with the provided user payload.
  *
- * @param payload - Object containing user id and role
+ * @param payload - Object containing user id
  * @param payload.id - The user's unique identifier
- * @param payload.role - The user's role from the User type
  * @returns A signed JWT token string valid for 6 hours
  */
-export const generateToken = (payload: { id: number; role: User["role"] }) =>
+export const generateToken = (payload: { id: number }) =>
   jwt.sign(payload, SECRET, {
     algorithm: "HS256",
     expiresIn: 1000 * 60 * 60 * 6, // 6 hours
@@ -54,7 +52,7 @@ export const generateToken = (payload: { id: number; role: User["role"] }) =>
 /**
  * Express middleware that authenticates requests using JWT tokens.
  * Extracts the token from the Authorization header, verifies it, and attaches
- * the decoded user information (userId and userRole) to res.locals.
+ * the decoded user information (userId) to res.locals.
  *
  * @param req - Express request object
  * @param res - Express response object
@@ -99,7 +97,6 @@ export async function authenticateToken(
   }
 
   res.locals.userId = user.id;
-  res.locals.userRole = user.role;
 
   next();
 }

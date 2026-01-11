@@ -62,7 +62,7 @@ export const login = async (
       );
     }
 
-    const token = generateToken({ id, role: user.role });
+    const token = generateToken({ id });
 
     return res.status(200).json({ data: { ...data, token } });
   } catch (error: unknown) {

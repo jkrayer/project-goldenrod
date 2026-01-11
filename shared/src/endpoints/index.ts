@@ -8,18 +8,10 @@ const LOGIN = `${API_V1}users/login`;
 
 const VERIFY_TOKEN = `${API_V1}users/verify-token`;
 
-// GAME ENDPOINTS
-
-const GAMES = `${API_V1}games/`;
-
-const GAME = `${API_V1}games/:id`;
-
-type KEYS = "REGISTER" | "LOGIN" | "VERIFY_TOKEN" | "GAMES" | "GAME";
+type KEYS = "REGISTER" | "LOGIN" | "VERIFY_TOKEN";
 
 export const API_ENDPOINTS: Record<KEYS, string> = Object.freeze({
   REGISTER,
   LOGIN,
   VERIFY_TOKEN,
-  GAMES,
-  GAME,
 });

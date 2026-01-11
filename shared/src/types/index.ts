@@ -15,7 +15,7 @@ export type SuccessResponse<T> = {
   data: T;
 };
 
-type ROLE = "ADMIN" | "DM" | "PLAYER";
+// // type ROLE = "ADMIN" | "DM" | "PLAYER";
 
 export type UserPayload = {
   email: string;
@@ -24,17 +24,5 @@ export type UserPayload = {
 };
 
 export type User = Omit<UserPayload, "password"> & {
-  role: ROLE;
   token: string;
-};
-
-export type GamePayload = {
-  name: string;
-  description: string;
-};
-
-export type Game = GamePayload & {
-  id: number;
-  userId: number;
-  createdAt: string;
 };
