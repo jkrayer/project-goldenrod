@@ -1,17 +1,27 @@
-import { Link } from "react-router";
-import { LOGIN_PATH, REGISTER_PATH } from "../../routes/routes";
+import { Box, Typography } from "@mui/material";
 import packageJson from "../../../package.json";
 
 export default function Home() {
   return (
-    <div>
-      <h1>Welcome to Project Goldenrod</h1>
-      <p>Alpha version {packageJson.version}</p>
-
-      <p>
-        <Link to={`/${LOGIN_PATH}`}>Login</Link> or
-        <Link to={`/${REGISTER_PATH}`}>Register</Link>
-      </p>
-    </div>
+    <Box
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      minHeight="100vh"
+    >
+      <Box>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Welcome to Project Goldenrod
+        </Typography>
+        <Typography variant="body1">
+          Alpha version {packageJson.version}
+        </Typography>
+        <Typography variant="body2" marginTop={2}>
+          This project is not currently open to the public. If you received an
+          invitation to join please follow the instructions in the invitation
+          email.
+        </Typography>
+      </Box>
+    </Box>
   );
 }

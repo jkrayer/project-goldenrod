@@ -1,17 +1,18 @@
-import { useEffect, type PropsWithChildren } from "react";
-import { useNavigate } from "react-router";
-import { API_ENDPOINTS } from "@project_goldenrod/shared";
-import { useLogout, useToken } from "../store/user";
+import { type PropsWithChildren } from "react"; // useEffect,
+// import { useNavigate } from "react-router";
+// import { API_ENDPOINTS } from "@project_goldenrod/shared";
+// import { useLogout, useToken } from "../store/user";
 // import type { RootState } from "../store/store";
 
 export default function ProtectedRoute({
   children,
 }: PropsWithChildren<unknown>) {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   // get local token
-  const logout = useLogout();
-  const token = useToken();
+  // const logout = useLogout();
+  // const token = useToken();
 
+  /*
   useEffect(() => {
     // if not exists redirect to login
     if (!token) {
@@ -49,6 +50,7 @@ export default function ProtectedRoute({
 
     validate();
   });
+  */
 
   return <>{children}</>;
 }

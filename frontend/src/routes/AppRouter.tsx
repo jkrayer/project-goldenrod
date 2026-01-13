@@ -1,14 +1,10 @@
-import { createBrowserRouter, redirect } from "react-router";
+import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
 import ProtectedRoute from "./ProtectedRoute";
 import * as Routes from "./routes";
-import Admin from "../pages/Admin/Admin";
-import Game from "../pages/Game/Game";
+import FourOFour from "../pages/Error/FourOFour";
 import Home from "../pages/Home/Home";
-import Lobby from "../pages/Lobby/Lobby";
-import Login from "../authentication/Login";
-import Register from "../authentication/Register";
-// import ErrorBoundary from "./ErrorBoundary";
+import Session from "../pages/Session/Session";
 
 const router = createBrowserRouter([
   {
@@ -19,48 +15,16 @@ const router = createBrowserRouter([
         Component: Home,
       },
       {
-        path: Routes.ADMIN_PATH,
+        path: Routes.SESSION_PATH,
         element: (
           <ProtectedRoute>
-            <Admin />
+            <Session />
           </ProtectedRoute>
         ),
-        //   errorElement: <ErrorBoundary />,
       },
       {
-        path: Routes.GAME_PATH,
-        children: [
-          { index: true, loader: () => redirect("/lobby") },
-          {
-            path: ":gameId",
-            element: (
-              <ProtectedRoute>
-                <Game />
-              </ProtectedRoute>
-            ),
-          },
-        ],
-        // Component: Game,
-        //   errorElement: <ErrorBoundary />,
-      },
-      {
-        path: Routes.LOBBY_PATH,
-        element: (
-          <ProtectedRoute>
-            <Lobby />
-          </ProtectedRoute>
-        ),
-        //   errorElement: <ErrorBoundary />,
-      },
-      {
-        path: Routes.LOGIN_PATH,
-        Component: Login,
-        //   errorElement: <ErrorBoundary />,
-      },
-      {
-        path: Routes.REGISTER_PATH,
-        Component: Register,
-        //   errorElement: <ErrorBoundary />,
+        path: "*",
+        element: <FourOFour />,
       },
     ],
   },
