@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import { RouterProvider } from "react-router/dom";
-import ProtectedRoute from "./ProtectedRoute";
 import * as Routes from "./routes";
+import ProtectedRoute from "../authentication/ProtectedRoute";
 import FourOFour from "../pages/Error/FourOFour";
 import Home from "../pages/Home/Home";
 import Session from "../pages/Session/Session";

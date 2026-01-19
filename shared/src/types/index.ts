@@ -17,6 +17,9 @@ export type ErrorResponse = {
 };
 
 export type SuccessResponse<T> = {
+  // status: number;
+  // statusText: string;
+  // success: true;
   data: T;
 };
 
