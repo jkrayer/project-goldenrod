@@ -23,6 +23,6 @@ export const userValidation = object<UserPayload>({
     .test(
       "no-brackets",
       "Password cannot contain brackets",
-      (val) => !/[\(\)\{\}\[\]]/.test(val || ""),
+      (val) => !/[(){}[]]/.test(val || ""),
     ),
 });
