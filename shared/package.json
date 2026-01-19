@@ -1,0 +1,27 @@
+{
+  "name": "@project_goldenrod/shared",
+  "version": "0.1.0",
+  "description": "Shared utilities, types, and validation for Project Goldenrod",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "test": "echo \"Error: no test specified\" && exit 0",
+    "lint": "eslint ."
+  },
+  "keywords": [],
+  "author": "James Krayer <jameskrayer@yahoo.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@eslint/js": "^8.57.1",
+    "globals": "^13.24.0",
+    "typescript": "5.9.3",
+    "typescript-eslint": "^8.46.3"
+  },
+  "dependencies": {
+    "yup": "1.7.1"
+  }
+}
