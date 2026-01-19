@@ -52,18 +52,21 @@ const AuthContext = createContext<{
  * </AuthProvider>
  * ```
  */
+
 export const AuthProvider = ({ children }: PropsWithChildren<unknown>) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   // Verify token on mount
   useEffect(() => {
+    console.log("mounted");
     const token = localStorage.getItem("authToken");
+    console.log("TOKEN", token);
 
     if (token) {
       setIsAuthenticating(true);
 
-      fetch(`http://localhost:3000${API_ENDPOINTS["VERIFY"]}`, {
+      fetch(`http://localhost:3000${API_ENDPOINTS.VERIFY_TOKEN}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -71,6 +74,7 @@ export const AuthProvider = ({ children }: PropsWithChildren<unknown>) => {
         },
       })
         .then((response) => {
+          console.log("RESPONSE", response);
           if (!response.ok) {
             throw new Error(`Error: ${response.statusText}`);
           }
@@ -78,9 +82,11 @@ export const AuthProvider = ({ children }: PropsWithChildren<unknown>) => {
           return response.json();
         })
         .then((res: SuccessResponse<{ valid: boolean }>) => {
+          console.log("2nd Then");
           setIsAuthenticated(res.data.valid);
         })
         .catch(() => {
+          console.log("CATCH");
           localStorage.removeItem("authToken");
           setIsAuthenticated(false);
         })
