@@ -4,6 +4,7 @@ import cors from "cors";
 import { Server } from "socket.io";
 import {
   API_ENDPOINTS,
+  SOCKET_EVENTS,
   userValidation,
   sessionValidation,
   type SessionPayload,
@@ -47,17 +48,24 @@ io.engine.on("connection_error", (err) => {
 io.on("connection", (socket) => {
   console.log("a user connected:", socket.id);
 
-  socket.on("joinSession", (sessionId: string, user: string) => {
+  socket.on(SOCKET_EVENTS.ROOM_JOIN, (sessionId: string, user: string) => {
+    console.log(`${user} joined session ${sessionId}`);
+
     socket.join(String(sessionId));
     socket.data.user = user;
-    console.log(`SocketJoined`, sessionId, user);
-    // .to(String(sessionId))
-    socket.broadcast.emit("userJoined", user);
+
+    socket.broadcast
+      .to(String(sessionId))
+      .emit(SOCKET_EVENTS.ROOM_JOINED, user);
   });
 
-  socket.on("leaveSession", (sessionId: string) => {
+  socket.on(SOCKET_EVENTS.ROOM_LEAVE, (sessionId: string) => {
+    console.log(`${socket.data.user} left session ${sessionId}`);
+
     socket.leave(String(sessionId));
-    console.log(`Socket ${socket.id} left session ${sessionId}`);
+    socket.broadcast
+      .to(String(sessionId))
+      .emit(SOCKET_EVENTS.ROOM_LEFT, socket.data.user);
   });
 
   socket.on("disconnect", () => {

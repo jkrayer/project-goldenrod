@@ -8,3 +8,5 @@ export const socket = io(URL, {
   autoConnect: false,
   transports: ["websocket"],
 });
+
+console.log("Socket ID:INITIAL", socket.id);

@@ -1,41 +1,43 @@
+import { Suspense } from "react";
 import { Container } from "@mui/material";
-import SnackbarProvider, { useSnackbar } from "./Toast/Toast";
+import SnackbarProvider from "./Toast/Toast"; // , { useSnackbar }
+import SessionContextProvider, {
+  useSessionContext,
+} from "./SessionContext/SessionContext";
 import packageJson from "../../../package.json";
-import SocketContextProvider, {
-  useSocketContext,
-} from "./SocketContext/Context";
-import { useEffect } from "react";
+import SocketContextProvider from "./SocketContext/Context";
 
 export default function Session() {
   return (
-    // Add full page frame here
-    <SocketContextProvider>
-      <SnackbarProvider>
-        <Container disableGutters={true}>
-          <Play />
-          <h1>Session</h1>
-          <p>Alpha version {packageJson.version}</p>
-        </Container>
-      </SnackbarProvider>
-    </SocketContextProvider>
+    <SnackbarProvider>
+      <Suspense fallback={<div>Loading...</div>}>
+        <SessionContextProvider>
+          <SocketContextProvider>
+            <Stage />
+          </SocketContextProvider>
+        </SessionContextProvider>
+      </Suspense>
+    </SnackbarProvider>
   );
 }
 
-// To be replaced by websocket messages
-// probably move to a hook
-const Play = () => {
-  const { enqueueSnackbar } = useSnackbar();
-  const { connected } = useSocketContext();
-
-  console.log(29, connected);
-
-  useEffect(() => {
-    if (connected) {
-      enqueueSnackbar("Socket Connected");
-    } else {
-      enqueueSnackbar("Socket Disconnected");
-    }
-  }, [connected, enqueueSnackbar]);
-
-  return <></>;
+const Stage = () => {
+  const userSession = useSessionContext();
+  return (
+    <Container disableGutters={true}>
+      <h1>{userSession.session.name}</h1>
+      <p>Alpha version {packageJson.version}</p>
+      <ul></ul>
+    </Container>
+  );
 };
+
+// <Toasts>
+// - get Session/Game by id, getSession Members by id, theoretically api checks
+// - if user can have this and may reject them
+//   <SessionProvider>
+//     <SocketContextProvider>
+//       <Session />
+//     </SocketContextProvider>
+//   </SessionProvider>
+// </Toasts>

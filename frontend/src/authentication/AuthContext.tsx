@@ -59,9 +59,7 @@ export const AuthProvider = ({ children }: PropsWithChildren<unknown>) => {
 
   // Verify token on mount
   useEffect(() => {
-    console.log("mounted");
     const token = localStorage.getItem("authToken");
-    console.log("TOKEN", token);
 
     if (token) {
       setIsAuthenticating(true);
@@ -69,12 +67,12 @@ export const AuthProvider = ({ children }: PropsWithChildren<unknown>) => {
       fetch(`http://localhost:3000${API_ENDPOINTS.VERIFY_TOKEN}`, {
         method: "GET",
         headers: {
+          "Cache-Control": "no-store",
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       })
         .then((response) => {
-          // console.log("RESPONSE", response);
           if (!response.ok) {
             throw new Error(`Error: ${response.statusText}`);
           }
@@ -82,11 +80,9 @@ export const AuthProvider = ({ children }: PropsWithChildren<unknown>) => {
           return response.json();
         })
         .then((res: SuccessResponse<{ valid: boolean }>) => {
-          // console.log("2nd Then");
           setIsAuthenticated(res.data.valid);
         })
         .catch(() => {
-          // console.log("CATCH");
           localStorage.removeItem("authToken");
           setIsAuthenticated(false);
         })
