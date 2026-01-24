@@ -1,5 +1,7 @@
+import { createServer } from "node:http";
 import express from "express";
 import cors from "cors";
+import { Server } from "socket.io";
 import {
   API_ENDPOINTS,
   userValidation,
@@ -27,7 +29,42 @@ app.use(
 );
 app.use(morganMiddleware);
 
-// ROUTES ----------------------------------------------------------------------
+// SOCKET ----------------------------------------------------------------------
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+  },
+});
+
+io.engine.on("connection_error", (err) => {
+  console.log(err.req); // the request object
+  console.log(err.code); // the error code, for example 1
+  console.log(err.message); // the error message, for example "Session ID unknown"
+  console.log(err.context); // some additional error context
+});
+
+io.on("connection", (socket) => {
+  console.log("a user connected:", socket.id);
+
+  socket.on("joinSession", (sessionId: string, user: string) => {
+    socket.join(String(sessionId));
+    socket.data.user = user;
+    console.log(`SocketJoined`, sessionId, user);
+    // .to(String(sessionId))
+    socket.broadcast.emit("userJoined", user);
+  });
+
+  socket.on("leaveSession", (sessionId: string) => {
+    socket.leave(String(sessionId));
+    console.log(`Socket ${socket.id} left session ${sessionId}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected:", socket.id);
+  });
+});
+// REST ROUTES -----------------------------------------------------------------
 
 // AUTH  --------------------
 app.post(
@@ -71,7 +108,7 @@ app.all("{*splat}", controllers.all);
 app.use(errorHandler);
 
 // Start the Express server
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Running application in environment: ${process.env.NODE_ENV}`);
   console.log(`The server is running on port: ${port}`);
 });

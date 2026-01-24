@@ -74,7 +74,7 @@ export const AuthProvider = ({ children }: PropsWithChildren<unknown>) => {
         },
       })
         .then((response) => {
-          console.log("RESPONSE", response);
+          // console.log("RESPONSE", response);
           if (!response.ok) {
             throw new Error(`Error: ${response.statusText}`);
           }
@@ -82,11 +82,11 @@ export const AuthProvider = ({ children }: PropsWithChildren<unknown>) => {
           return response.json();
         })
         .then((res: SuccessResponse<{ valid: boolean }>) => {
-          console.log("2nd Then");
+          // console.log("2nd Then");
           setIsAuthenticated(res.data.valid);
         })
         .catch(() => {
-          console.log("CATCH");
+          // console.log("CATCH");
           localStorage.removeItem("authToken");
           setIsAuthenticated(false);
         })
