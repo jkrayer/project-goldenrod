@@ -15,7 +15,7 @@ type LocalSession = Session & {
 
 const newSession = (): LocalSession => ({
   session: { id: -1, name: "" },
-  me: { role: "PLAYER" },
+  me: { role: "PLAYER", userId: -1 },
   members: [],
   onlineMembers: {},
 });
@@ -33,7 +33,12 @@ export default function SessionContextProvider({
   useEffect(() => {
     getSession(id)
       .then((data) => {
-        setSession({ ...data, onlineMembers: {} });
+        setSession({
+          ...data,
+          onlineMembers: {
+            [data.me.userId]: true,
+          },
+        });
       })
       .catch((error) => {
         console.error("Failed to fetch session:", error);

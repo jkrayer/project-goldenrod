@@ -59,6 +59,6 @@ export type SessionResponse = {
 
 export type Session = {
   session: { id: number; name: string };
-  me: { role: ROLE };
+  me: { role: ROLE; userId: number };
   members: SessionMember[];
 };
