@@ -5,9 +5,7 @@ import SessionContextProvider, {
   useSessionContext,
 } from "./SessionContext/SessionContext";
 import packageJson from "../../../package.json";
-import SocketContextProvider, {
-  useSocketContext,
-} from "./SocketContext/Context";
+import SocketContextProvider from "./SocketContext/Context";
 import { useAuthContext } from "../../authentication/AuthContext";
 
 export default function Session() {
@@ -27,21 +25,13 @@ export default function Session() {
 const Stage = () => {
   const { members, onlineMembers, session } = useSessionContext();
   const { logout } = useAuthContext();
-  const { leave } = useSocketContext();
 
   return (
     <Container disableGutters={true}>
       <h1>{session.name}</h1>
       <p>Alpha version {packageJson.version}</p>
 
-      <button
-        onClick={() => {
-          leave();
-          logout();
-        }}
-      >
-        Logout
-      </button>
+      <button onClick={logout}>Logout</button>
       <ul>
         {members.map((member) => (
           <li key={member.userId}>
@@ -53,13 +43,3 @@ const Stage = () => {
     </Container>
   );
 };
-
-// <Toasts>
-// - get Session/Game by id, getSession Members by id, theoretically api checks
-// - if user can have this and may reject them
-//   <SessionProvider>
-//     <SocketContextProvider>
-//       <Session />
-//     </SocketContextProvider>
-//   </SessionProvider>
-// </Toasts>

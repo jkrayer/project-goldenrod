@@ -100,6 +100,7 @@ export const AuthProvider = ({ children }: PropsWithChildren<unknown>) => {
 
   // HANDLERS
   const logout = useCallback(() => {
+    console.log("Logging out");
     localStorage.clear();
     setIsAuthenticated(false);
     // probably redirect to login page ... or modal.

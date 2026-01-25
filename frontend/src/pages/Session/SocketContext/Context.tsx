@@ -1,11 +1,4 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
 import { SOCKET_EVENTS } from "@project_goldenrod/shared";
 // import { socket } from "./socket";
@@ -16,9 +9,8 @@ import { useSnackbar } from "../Toast/Toast";
 const URL =
   process.env.NODE_ENV === "production" ? undefined : "http://localhost:3000";
 
-const CONTEXT = createContext<{ connected: boolean; leave: () => void }>({
+const CONTEXT = createContext<{ connected: boolean }>({
   connected: false,
-  leave: () => {},
 });
 
 export default function SocketContextProvider({
@@ -27,23 +19,23 @@ export default function SocketContextProvider({
   children: React.ReactNode;
 }) {
   const { enqueueSnackbar } = useSnackbar();
-  const { isAuthenticated, token } = useAuthContext();
+  const { isAuthenticated, token, logout } = useAuthContext();
   const {
     session: { id, name },
     setStatus,
   } = useSessionContext();
   // may or may not need user here
-   
+
   // const [user, setUser] = useState<string>("");
   const [connected, setConnected] = useState<boolean>(false);
 
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    if (!isAuthenticated || !token || id === -1) return () => {};
+    if (!token || id === -1) return () => {};
 
     socketRef.current = io(URL, {
-      // autoConnect: false,
+      autoConnect: false,
       transports: ["websocket"],
       auth: {
         token,
@@ -83,22 +75,26 @@ export default function SocketContextProvider({
       enqueueSnackbar(`${user.user} left the session`);
     });
 
+    socketRef.current.on("disconnect", (reason) => {
+      console.log("Socket disconnected:", reason);
+      setConnected(false);
+      logout();
+    });
+
+    if (isAuthenticated) {
+      socketRef.current.connect();
+    } else {
+      socketRef.current?.emit(SOCKET_EVENTS.ROOM_LEAVE, `${id}-${name}`);
+      socketRef.current?.disconnect();
+    }
+
     return () => {
       socketRef.current?.emit(SOCKET_EVENTS.ROOM_LEAVE, `${id}-${name}`);
       socketRef.current?.disconnect();
-      setConnected(false);
     };
-  }, [enqueueSnackbar, id, isAuthenticated, name, setStatus, token]);
+  }, [enqueueSnackbar, id, isAuthenticated, logout, name, setStatus, token]);
 
-  const leave = useCallback(() => {
-    socketRef.current?.emit(SOCKET_EVENTS.ROOM_LEAVE, `${id}-${name}`);
-    socketRef.current?.disconnect();
-    setConnected(false);
-  }, [id, name, setConnected]);
-
-  return (
-    <CONTEXT.Provider value={{ connected, leave }}>{children}</CONTEXT.Provider>
-  );
+  return <CONTEXT.Provider value={{ connected }}>{children}</CONTEXT.Provider>;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
