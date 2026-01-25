@@ -4,7 +4,6 @@ import cors from "cors";
 import { Server } from "socket.io";
 import {
   API_ENDPOINTS,
-  SOCKET_EVENTS,
   userValidation,
   sessionValidation,
   type SessionPayload,
@@ -13,6 +12,7 @@ import {
 import controllers from "./controllers/index.js";
 import { authenticateToken, errorHandler, validate } from "./lib/index.js";
 import morganMiddleware from "./lib/middleware/morgan.js";
+import initializeSocket from "./socket/index.js";
 
 // Create a new express application instance
 const app = express();
@@ -38,40 +38,8 @@ const io = new Server(server, {
   },
 });
 
-io.engine.on("connection_error", (err) => {
-  console.log(err.req); // the request object
-  console.log(err.code); // the error code, for example 1
-  console.log(err.message); // the error message, for example "Session ID unknown"
-  console.log(err.context); // some additional error context
-});
+initializeSocket(io);
 
-io.on("connection", (socket) => {
-  console.log("a user connected:", socket.id);
-
-  socket.on(SOCKET_EVENTS.ROOM_JOIN, (sessionId: string, user: string) => {
-    console.log(`${user} joined session ${sessionId}`);
-
-    socket.join(String(sessionId));
-    socket.data.user = user;
-
-    socket.broadcast
-      .to(String(sessionId))
-      .emit(SOCKET_EVENTS.ROOM_JOINED, user);
-  });
-
-  socket.on(SOCKET_EVENTS.ROOM_LEAVE, (sessionId: string) => {
-    console.log(`${socket.data.user} left session ${sessionId}`);
-
-    socket.leave(String(sessionId));
-    socket.broadcast
-      .to(String(sessionId))
-      .emit(SOCKET_EVENTS.ROOM_LEFT, socket.data.user);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("user disconnected:", socket.id);
-  });
-});
 // REST ROUTES -----------------------------------------------------------------
 
 // AUTH  --------------------

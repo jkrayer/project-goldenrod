@@ -1,21 +1,25 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+import { io, type Socket } from "socket.io-client";
 import { SOCKET_EVENTS } from "@project_goldenrod/shared";
-import { socket } from "./socket";
+// import { socket } from "./socket";
 import { useAuthContext } from "../../../authentication/AuthContext";
 import { useSessionContext } from "../SessionContext/SessionContext";
 import { useSnackbar } from "../Toast/Toast";
 
-// import { io } from "socket.io-client";
+const URL =
+  process.env.NODE_ENV === "production" ? undefined : "http://localhost:3000";
 
-// const URL =
-//   process.env.NODE_ENV === "production" ? undefined : "http://localhost:3000";
-// console.log("process.env.NODE_ENV", process.env.NODE_ENV, URL);
-
-// const socket = io(URL, {
-//   transports: ["websocket"],
-// });
-
-const CONTEXT = createContext<{ connected: boolean }>({ connected: false });
+const CONTEXT = createContext<{ connected: boolean; leave: () => void }>({
+  connected: false,
+  leave: () => {},
+});
 
 export default function SocketContextProvider({
   children,
@@ -23,51 +27,78 @@ export default function SocketContextProvider({
   children: React.ReactNode;
 }) {
   const { enqueueSnackbar } = useSnackbar();
-  const { isAuthenticated } = useAuthContext();
+  const { isAuthenticated, token } = useAuthContext();
   const {
     session: { id, name },
+    setStatus,
   } = useSessionContext();
   // may or may not need user here
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [user, setUser] = useState<string>("");
+   
+  // const [user, setUser] = useState<string>("");
   const [connected, setConnected] = useState<boolean>(false);
 
+  const socketRef = useRef<Socket | null>(null);
+
   useEffect(() => {
-    console.log("40###", id, name);
-    if (isAuthenticated && id !== -1) {
-      socket.connect();
+    if (!isAuthenticated || !token || id === -1) return () => {};
 
-      socket
-        .on("connect", () => {
-          setConnected(true);
-          console.log("Socket connected");
-          const { userName } = JSON.parse(localStorage.getItem("user") || "{}");
+    socketRef.current = io(URL, {
+      // autoConnect: false,
+      transports: ["websocket"],
+      auth: {
+        token,
+      },
+    });
 
-          socket.emit(
-            SOCKET_EVENTS.ROOM_JOIN,
-            `${id}-${name}`,
-            userName || "Anonymous",
-          );
-        })
-        .on("disconnect", (reason, details) => {
-          console.log("Socket disconnected", reason, details);
-          setConnected(false);
-          setUser("");
-        })
-        .on(SOCKET_EVENTS.ROOM_JOINED, (userName: string) => {
-          console.log("Socket userJoined", userName);
-          enqueueSnackbar(`${userName} joined the session`);
-        });
-    } else {
-      socket.disconnect();
-    }
+    socketRef.current.on(SOCKET_EVENTS.REJECTED, (message: string) => {
+      console.log("REJECTED:", message);
+      socketRef.current?.disconnect();
+    });
 
-    console.log("40%%%%", id, name);
+    socketRef.current.on("authenticated", ({ userId }: { userId: string }) => {
+      console.log("AUTHENTICATED:", userId);
 
-    return () => socket.disconnect();
-  }, [isAuthenticated, setConnected, setUser, id, name, enqueueSnackbar]);
+      setConnected(true);
 
-  return <CONTEXT.Provider value={{ connected }}>{children}</CONTEXT.Provider>;
+      const { userName } = JSON.parse(localStorage.getItem("user") || "{}");
+
+      console.log("Emitting ROOM_JOIN", { id, name, userName });
+
+      socketRef.current?.emit(
+        SOCKET_EVENTS.ROOM_JOIN,
+        `${id}-${name}`,
+        userName || "Anonymous",
+      );
+    });
+
+    socketRef.current.on(SOCKET_EVENTS.ROOM_JOINED, (user) => {
+      console.log("ROOM_JOINED:", user);
+      setStatus(user.userId, true);
+      enqueueSnackbar(`${user.user} joined the session`);
+    });
+
+    socketRef.current.on(SOCKET_EVENTS.ROOM_LEFT, (user) => {
+      console.log("ROOM_LEFT:", user);
+      setStatus(user.userId, false);
+      enqueueSnackbar(`${user.user} left the session`);
+    });
+
+    return () => {
+      socketRef.current?.emit(SOCKET_EVENTS.ROOM_LEAVE, `${id}-${name}`);
+      socketRef.current?.disconnect();
+      setConnected(false);
+    };
+  }, [enqueueSnackbar, id, isAuthenticated, name, setStatus, token]);
+
+  const leave = useCallback(() => {
+    socketRef.current?.emit(SOCKET_EVENTS.ROOM_LEAVE, `${id}-${name}`);
+    socketRef.current?.disconnect();
+    setConnected(false);
+  }, [id, name, setConnected]);
+
+  return (
+    <CONTEXT.Provider value={{ connected, leave }}>{children}</CONTEXT.Provider>
+  );
 }
 
 // eslint-disable-next-line react-refresh/only-export-components

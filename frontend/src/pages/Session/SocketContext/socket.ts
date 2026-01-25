@@ -1,12 +1,22 @@
-import { io } from "socket.io-client";
+// import { io } from "socket.io-client";
 
-const URL =
-  process.env.NODE_ENV === "production" ? undefined : "http://localhost:3000";
-console.log("process.env.NODE_ENV", process.env.NODE_ENV, URL);
+// const token = localStorage.getItem("authToken");
 
-export const socket = io(URL, {
-  autoConnect: false,
-  transports: ["websocket"],
-});
+// const URL =
+//   process.env.NODE_ENV === "production" ? undefined : "http://localhost:3000";
 
-console.log("Socket ID:INITIAL", socket.id);
+// export const socket = io(URL, {
+//   autoConnect: false,
+//   transports: ["websocket"],
+//   auth: {
+//     token,
+//   },
+// });
+
+// console.log("Socket initialized with token:", {
+//   autoConnect: false,
+//   transports: ["websocket"],
+//   auth: {
+//     token,
+//   },
+// });

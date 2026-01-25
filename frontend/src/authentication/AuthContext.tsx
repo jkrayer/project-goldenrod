@@ -17,6 +17,7 @@ const AuthContext = createContext<{
   isAuthenticating: boolean;
   login: (user: User) => void;
   logout: () => void;
+  token: string | null;
 }>({
   isAuthenticated: false,
   isAuthenticating: false,
@@ -26,6 +27,7 @@ const AuthContext = createContext<{
   logout: () => {
     throw new Error("Logout function not implemented");
   },
+  token: null,
 });
 
 /**
@@ -56,6 +58,7 @@ const AuthContext = createContext<{
 export const AuthProvider = ({ children }: PropsWithChildren<unknown>) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
 
   // Verify token on mount
   useEffect(() => {
@@ -81,12 +84,15 @@ export const AuthProvider = ({ children }: PropsWithChildren<unknown>) => {
         })
         .then((res: SuccessResponse<{ valid: boolean }>) => {
           setIsAuthenticated(res.data.valid);
+          setToken(res.data.valid ? token : null);
         })
         .catch(() => {
           localStorage.removeItem("authToken");
+          setToken(null);
           setIsAuthenticated(false);
         })
         .finally(() => {
+          setToken(null);
           setIsAuthenticating(false);
         });
     }
@@ -102,12 +108,13 @@ export const AuthProvider = ({ children }: PropsWithChildren<unknown>) => {
   const login = useCallback(({ token, ...user }: User) => {
     localStorage.setItem("authToken", token);
     localStorage.setItem("user", JSON.stringify(user));
+    setToken(token);
     setIsAuthenticated(true);
   }, []);
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, isAuthenticating, login, logout }}
+      value={{ isAuthenticated, isAuthenticating, login, logout, token }}
     >
       {children}
     </AuthContext.Provider>
