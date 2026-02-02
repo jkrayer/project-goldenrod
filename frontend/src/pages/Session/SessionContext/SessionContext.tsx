@@ -78,3 +78,7 @@ export default function SessionContextProvider({
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const useSessionContext = () => useContext(SessionContext);
+
+// problem I get my own joins
+// emit seems to emit back to sender only
+// broadcast seems to emit to everyone except sender

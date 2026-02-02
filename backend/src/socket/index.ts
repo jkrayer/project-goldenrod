@@ -32,7 +32,7 @@ export default function initializeSocket(io: Server): void {
   // emit - to everyone
   // broadcast - to everyone except sender
   io.on("connection", async (socket) => {
-    console.log("A is attempting to connec:", socket.id);
+    console.log("A user is attempting to connect:", socket.id);
 
     socket.on("game:join", joinGame(socket));
     socket.on("game:leave", leaveGame(socket));

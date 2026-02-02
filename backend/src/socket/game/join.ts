@@ -84,10 +84,9 @@ export const joinGame = (socket: Socket) => {
     );
     console.log(ROOMS);
 
-    // socket.join(roomName);
+    // socket.join([socket.id, roomName]);
     // socket.to(roomName).emit("game:join:success", {
-    // .broadcast
-    socket.emit("game:join:success", {
+    socket.broadcast.emit("game:join:success", {
       message: `${userName} joined the game.`,
       users: Object.fromEntries(room),
     });
