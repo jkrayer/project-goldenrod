@@ -23,7 +23,7 @@ export default function Session() {
 }
 
 const Stage = () => {
-  const { members, onlineMembers, session } = useSessionContext();
+  const { members, session } = useSessionContext();
   const { logout } = useAuthContext();
 
   return (
@@ -35,8 +35,8 @@ const Stage = () => {
       <ul>
         {members.map((member) => (
           <li key={member.userId}>
-            {member.name} - {member.role} -&nbsp;
-            {onlineMembers[member.userId] ? "Online" : "Offline"}
+            {member.name} - {member.role} -{" "}
+            {member.online ? "Online" : "Offline"}
           </li>
         ))}
       </ul>

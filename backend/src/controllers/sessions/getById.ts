@@ -91,6 +91,7 @@ export const getById = async (
         userId: member.userId,
         name: member.user.userName,
         role: member.role,
+        online: false,
       })),
     };
 

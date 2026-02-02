@@ -78,8 +78,16 @@ export const joinGame = (socket: Socket) => {
     socket.data.room = roomName;
     socket.data.userName = userName;
 
-    socket.join(roomName);
-    socket.to(roomName).emit("game:join:success", {
+    console.log(
+      `User ${socket.data.userId} successfully joined:`,
+      socket.data.room,
+    );
+    console.log(ROOMS);
+
+    // socket.join(roomName);
+    // socket.to(roomName).emit("game:join:success", {
+    // .broadcast
+    socket.emit("game:join:success", {
       message: `${userName} joined the game.`,
       users: Object.fromEntries(room),
     });

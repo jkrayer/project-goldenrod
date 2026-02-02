@@ -6,57 +6,71 @@ import {
   type PropsWithChildren,
 } from "react";
 import { useParams } from "react-router";
-import { type Session } from "@project_goldenrod/shared";
+import type { Session, SessionMember } from "@project_goldenrod/shared";
 import { getSession } from "../../../lib/api";
 
-type LocalSession = Session & {
-  onlineMembers: Record<number, boolean>;
-};
-
-const newSession = (): LocalSession => ({
+const newSession = (): Session => ({
   session: { id: -1, name: "" },
   me: { role: "PLAYER", userId: -1 },
   members: [],
-  onlineMembers: {},
 });
 
 const SessionContext = createContext<
-  LocalSession & { setStatus: (userId: number, online: boolean) => void }
->({ ...newSession(), setStatus: () => {} });
+  Session & {
+    // setStatus: (userId: number, online: boolean) => void;
+    mergeUsers: (members: Record<number, SessionMember>) => void;
+  }
+>({
+  ...newSession(),
+  mergeUsers: () => {},
+});
 
 export default function SessionContextProvider({
   children,
 }: PropsWithChildren<unknown>) {
   const { id = "-1" } = useParams<{ id: string }>();
-  const [session, setSession] = useState<LocalSession>(newSession);
+  const [session, setSession] = useState<Session>(newSession());
 
   useEffect(() => {
     getSession(id)
-      .then((data) => {
-        setSession({
-          ...data,
-          onlineMembers: {
-            [data.me.userId]: true,
-          },
-        });
-      })
+      .then((data) => setSession(data))
       .catch((error) => {
         console.error("Failed to fetch session:", error);
       });
   }, [id]);
 
-  const setStatus = (userId: number, online: boolean) => {
+  // const setStatus = (userId: number, online: boolean) => {
+  //   setSession((prevSession) => ({
+  //     ...prevSession,
+  //     onlineMembers: {
+  //       ...prevSession.onlineMembers,
+  //       [userId]: online,
+  //     },
+  //   }));
+  // };
+
+  const mergeUsers = (newMembers: Record<number, SessionMember>) => {
+    const copy = { ...newMembers };
+
     setSession((prevSession) => ({
       ...prevSession,
-      onlineMembers: {
-        ...prevSession.onlineMembers,
-        [userId]: online,
-      },
+      members: [
+        ...prevSession.members.map((member) => {
+          delete copy[member.userId];
+
+          return newMembers[member.userId]
+            ? { ...newMembers[member.userId] }
+            : member;
+        }),
+        ...Object.values(copy),
+      ],
     }));
   };
 
+  console.log("SESSION CONTEXT:", session);
+
   return (
-    <SessionContext.Provider value={{ ...session, setStatus }}>
+    <SessionContext.Provider value={{ ...session, mergeUsers }}>
       {children}
     </SessionContext.Provider>
   );

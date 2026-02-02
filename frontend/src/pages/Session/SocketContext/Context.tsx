@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io, type Socket } from "socket.io-client";
-import { SOCKET_EVENTS } from "@project_goldenrod/shared";
+import { type SessionMember } from "@project_goldenrod/shared";
 // import { socket } from "./socket";
 import { useAuthContext } from "../../../authentication/AuthContext";
 import { useSessionContext } from "../SessionContext/SessionContext";
@@ -22,7 +22,7 @@ export default function SocketContextProvider({
   const { isAuthenticated, token, logout } = useAuthContext();
   const {
     session: { id, name },
-    setStatus,
+    mergeUsers,
   } = useSessionContext();
   // may or may not need user here
 
@@ -42,38 +42,68 @@ export default function SocketContextProvider({
       },
     });
 
-    socketRef.current.on(SOCKET_EVENTS.REJECTED, (message: string) => {
+    socketRef.current.on("authentication:failure", (message: string) => {
       console.log("REJECTED:", message);
       socketRef.current?.disconnect();
     });
 
-    socketRef.current.on("authenticated", ({ userId }: { userId: string }) => {
-      console.log("AUTHENTICATED:", userId);
+    socketRef.current.on(
+      "authentication:success",
+      ({ message }: { message: string }) => {
+        console.log("AUTHENTICATED:", message);
 
-      setConnected(true);
+        setConnected(true);
 
-      const { userName } = JSON.parse(localStorage.getItem("user") || "{}");
+        const { userName = "Anonymous" } = JSON.parse(
+          localStorage.getItem("user") || "{}",
+        );
 
-      console.log("Emitting ROOM_JOIN", { id, name, userName });
+        console.log("Emitting ROOM_JOIN", { id, name, userName });
 
-      socketRef.current?.emit(
-        SOCKET_EVENTS.ROOM_JOIN,
-        `${id}-${name}`,
-        userName || "Anonymous",
-      );
+        socketRef.current?.emit("game:join", {
+          gameName: name,
+          gameId: id,
+          userName,
+        });
+      },
+    );
+
+    socketRef.current.on("game:join:failure", ({ message }) => {
+      console.log("JOIN FAILURE:", message);
+      enqueueSnackbar(`Join Failure: ${message}`);
+      socketRef.current?.disconnect();
     });
 
-    socketRef.current.on(SOCKET_EVENTS.ROOM_JOINED, (user) => {
-      console.log("ROOM_JOINED:", user);
-      setStatus(user.userId, true);
-      enqueueSnackbar(`${user.user} joined the session`);
-    });
+    socketRef.current.on(
+      "game:join:success",
+      ({
+        message,
+        users,
+      }: {
+        message: string;
+        users: Record<number, SessionMember>;
+      }) => {
+        console.log("ROOM_JOINED:", message);
+        enqueueSnackbar(message);
+        console.log("MERGING:", users);
+        mergeUsers(users);
+      },
+    );
 
-    socketRef.current.on(SOCKET_EVENTS.ROOM_LEFT, (user) => {
-      console.log("ROOM_LEFT:", user);
-      setStatus(user.userId, false);
-      enqueueSnackbar(`${user.user} left the session`);
-    });
+    socketRef.current.on(
+      "game:leave:success",
+      ({
+        message,
+        users,
+      }: {
+        message: string;
+        users: Record<number, SessionMember>;
+      }) => {
+        console.log("ROOM_LEFT:", message);
+        enqueueSnackbar(message);
+        mergeUsers(users);
+      },
+    );
 
     socketRef.current.on("disconnect", (reason) => {
       console.log("Socket disconnected:", reason);
@@ -84,15 +114,15 @@ export default function SocketContextProvider({
     if (isAuthenticated) {
       socketRef.current.connect();
     } else {
-      socketRef.current?.emit(SOCKET_EVENTS.ROOM_LEAVE, `${id}-${name}`);
+      socketRef.current?.emit("game:leave");
       socketRef.current?.disconnect();
     }
 
     return () => {
-      socketRef.current?.emit(SOCKET_EVENTS.ROOM_LEAVE, `${id}-${name}`);
+      socketRef.current?.emit("game:leave");
       socketRef.current?.disconnect();
     };
-  }, [enqueueSnackbar, id, isAuthenticated, logout, name, setStatus, token]);
+  }, [enqueueSnackbar, id, isAuthenticated, logout, mergeUsers, name, token]);
 
   return <CONTEXT.Provider value={{ connected }}>{children}</CONTEXT.Provider>;
 }

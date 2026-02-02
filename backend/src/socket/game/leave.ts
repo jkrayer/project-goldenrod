@@ -6,15 +6,19 @@ export const leaveGame = (socket: Socket) => {
     const { userId, userName, room } = socket.data;
 
     // update room
-    const roomData = ROOMS.get(room);
-    const userData = roomData?.get(userId);
-    userData!.online = false;
+    console.log(`User (${userId}) leaving room ${room}. Current ROOMS:`, ROOMS);
+
+    // const roomData = ROOMS.get(room);
+    // const userData = roomData?.get(userId);
+    // userData!.online = false;
 
     console.log(`User ${userName} is leaving room ${room}`);
+    console.log(ROOMS);
 
-    socket.to(room).emit("game:leave:success", {
+    // socket.to(room)
+    socket.emit("game:leave:success", {
       message: `User ${userName} left the game.`,
-      users: Object.fromEntries(room),
+      users: {},
     });
 
     socket.leave(room);
