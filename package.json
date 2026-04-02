@@ -7,13 +7,20 @@
   "workspaces": [
     "backend",
     "frontend",
-    "shared"
+    "shared",
+    "tools"
   ],
   "scripts": {
     "prepare": "husky",
     "test": "npm run --workspaces test",
     "lint": "npm run --workspaces lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "dev:tools": "npm run -w tools dev",
+    "build:tools": "npm run -w shared build && npm run -w tools build",
+    "build:tools:prod": "npm run -w shared build && npm run -w tools build:prod",
+    "lint:tools": "npm run -w tools lint",
+    "preview:tools": "npm run -w tools preview",
+    "serve:tools": "npm run -w tools preview -- --host 0.0.0.0 --port 4173"
   },
   "keywords": [],
   "author": "James Krayer <jameskrayer@yahoo.com>",

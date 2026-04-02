@@ -7,6 +7,9 @@ import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import "./index.css";
+import { appConfig } from "./lib/appConfig";
+
+document.title = `${appConfig.appName} (${appConfig.appVariant})`;
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

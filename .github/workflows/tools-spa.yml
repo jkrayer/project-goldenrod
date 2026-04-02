@@ -1,0 +1,45 @@
+name: tools-spa
+
+on:
+  push:
+    paths:
+      - tools/**
+      - shared/**
+      - package.json
+      - package-lock.json
+      - .github/workflows/tools-spa.yml
+  pull_request:
+    paths:
+      - tools/**
+      - shared/**
+      - package.json
+      - package-lock.json
+      - .github/workflows/tools-spa.yml
+
+jobs:
+  tools:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.11.x
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint tools app
+        run: npm run lint:tools
+
+      - name: Build tools app (production)
+        run: npm run build:tools:prod
+
+      - name: Upload tools dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: tools-dist
+          path: tools/dist

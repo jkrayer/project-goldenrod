@@ -7,3 +7,6 @@ export * from "./validation/index.js";
 
 // TYPES
 export type * from "./types/index.js";
+
+// APP CONFIG
+export * from "./config/appConfig.js";
