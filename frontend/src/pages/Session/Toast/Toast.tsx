@@ -18,6 +18,7 @@ export default function SnackbarProvider({
   children: React.ReactNode;
 }) {
   const [messages, setMessages] = useState<string[]>([]);
+  // console.log("SnackbarProvider messages", messages);
 
   const enqueueSnackbar = (message: string) => {
     setMessages((old) => [...old, message]);
@@ -39,6 +40,7 @@ export default function SnackbarProvider({
 
 function Toast() {
   const { messages, dequeueSnackbar } = useContext(SnackbarContext);
+  console.log("Toast messages", messages);
 
   const handleClose = (
     event?: React.SyntheticEvent | Event,
@@ -55,7 +57,7 @@ function Toast() {
     <Snackbar
       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       open={messages.length > 0}
-      autoHideDuration={6000}
+      autoHideDuration={3000}
       onClose={handleClose}
       message={messages[0]}
       action={

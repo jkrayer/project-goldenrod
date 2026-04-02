@@ -1,27 +1,45 @@
-import { Button, Container } from "@mui/material";
-import SnackbarProvider, { useSnackbar } from "./Toast/Toast";
+import { Suspense } from "react";
+import { Container } from "@mui/material";
+import SnackbarProvider from "./Toast/Toast"; // , { useSnackbar }
+import SessionContextProvider, {
+  useSessionContext,
+} from "./SessionContext/SessionContext";
 import packageJson from "../../../package.json";
+import SocketContextProvider from "./SocketContext/Context";
+import { useAuthContext } from "../../authentication/AuthContext";
 
 export default function Session() {
   return (
-    // Add full page frame here
     <SnackbarProvider>
-      <Container disableGutters={true}>
-        <Play />
-        <h1>Session</h1>
-        <p>Alpha version {packageJson.version}</p>
-      </Container>
+      <Suspense fallback={<div>Loading...</div>}>
+        <SessionContextProvider>
+          <SocketContextProvider>
+            <Stage />
+          </SocketContextProvider>
+        </SessionContextProvider>
+      </Suspense>
     </SnackbarProvider>
   );
 }
 
-// To be replaced by websocket messages
-const Play = () => {
-  const { enqueueSnackbar } = useSnackbar();
+const Stage = () => {
+  const { members, session } = useSessionContext();
+  const { logout } = useAuthContext();
 
   return (
-    <Button onClick={() => enqueueSnackbar("This is a test message!")}>
-      Show Toast
-    </Button>
+    <Container disableGutters={true}>
+      <h1>{session.name}</h1>
+      <p>Alpha version {packageJson.version}</p>
+
+      <button onClick={logout}>Logout</button>
+      <ul>
+        {members.map((member) => (
+          <li key={member.userId}>
+            {member.name} - {member.role} -{" "}
+            {member.online ? "Online" : "Offline"}
+          </li>
+        ))}
+      </ul>
+    </Container>
   );
 };

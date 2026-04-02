@@ -1,5 +1,7 @@
+import { createServer } from "node:http";
 import express from "express";
 import cors from "cors";
+import { Server } from "socket.io";
 import {
   API_ENDPOINTS,
   userValidation,
@@ -10,6 +12,7 @@ import {
 import controllers from "./controllers/index.js";
 import { authenticateToken, errorHandler, validate } from "./lib/index.js";
 import morganMiddleware from "./lib/middleware/morgan.js";
+import initializeSocket from "./socket/index.js";
 
 // Create a new express application instance
 const app = express();
@@ -27,7 +30,17 @@ app.use(
 );
 app.use(morganMiddleware);
 
-// ROUTES ----------------------------------------------------------------------
+// SOCKET ----------------------------------------------------------------------
+const server = createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+  },
+});
+
+initializeSocket(io);
+
+// REST ROUTES -----------------------------------------------------------------
 
 // AUTH  --------------------
 app.post(
@@ -71,7 +84,7 @@ app.all("{*splat}", controllers.all);
 app.use(errorHandler);
 
 // Start the Express server
-app.listen(port, () => {
+server.listen(port, () => {
   console.log(`Running application in environment: ${process.env.NODE_ENV}`);
   console.log(`The server is running on port: ${port}`);
 });

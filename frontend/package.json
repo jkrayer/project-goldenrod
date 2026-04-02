@@ -37,7 +37,8 @@
     "ramda": "0.32.0",
     "react": "19.2.1",
     "react-dom": "19.2.1",
-    "react-router": "7.10.1"
+    "react-router": "7.10.1",
+    "socket.io-client": "4.8.3"
   },
   "devDependencies": {
     "@eslint/js": "9.36.0",

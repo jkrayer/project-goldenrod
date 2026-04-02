@@ -100,3 +100,40 @@ export async function authenticateToken(
 
   next();
 }
+
+// For Socket
+export async function authenticateTokenSocket(token?: string) {
+  let numericId: number | undefined;
+
+  console.log("Authenticating socket with token:", token);
+
+  if (token === undefined) {
+    return -1;
+  }
+
+  jwt.verify(token, SECRET, { algorithms: ["HS256"] }, (err, decoded) => {
+    if (err) {
+      return -1;
+    } else if (!decoded || typeof decoded === "string") {
+      return -1;
+    }
+
+    const questionableId = (decoded as { id?: unknown }).id;
+
+    if (typeof questionableId !== "number" || isNaN(questionableId)) {
+      return -1;
+    } else {
+      numericId = questionableId;
+    }
+  });
+
+  const user = await prisma.user.findUnique({
+    where: { id: numericId! },
+  });
+
+  if (!user) {
+    return -1;
+  }
+
+  return user.id;
+}

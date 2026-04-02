@@ -84,12 +84,14 @@ export const getById = async (
         name: session.name,
       },
       me: {
+        userId: meData.userId,
         role: meData.role,
       },
       members: members.map((member) => ({
         userId: member.userId,
         name: member.user.userName,
         role: member.role,
+        online: false,
       })),
     };
 

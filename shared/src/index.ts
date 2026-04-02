@@ -1,5 +1,6 @@
 // CONSTANTS
-export { API_ENDPOINTS } from "./endpoints/index.js";
+export * from "./endpoints/index.js";
+export * from "./events/index.js";
 
 // VALIDATION
 export * from "./validation/index.js";

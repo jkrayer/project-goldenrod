@@ -38,10 +38,11 @@ export type User = Omit<UserPayload, "password"> & {
 };
 
 // SESSIONS --------------------
-type SessionMember = {
+export type SessionMember = {
   userId: number; // not sure this data is necessary
   name: string;
   role: ROLE;
+  online: boolean;
 };
 
 // POST /sessions/
@@ -59,6 +60,6 @@ export type SessionResponse = {
 
 export type Session = {
   session: { id: number; name: string };
-  me: { role: ROLE };
+  me: { role: ROLE; userId: number };
   members: SessionMember[];
 };
