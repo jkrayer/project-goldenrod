@@ -38,6 +38,11 @@ jobs:
       - name: Build tools app (production)
         run: npm run build:tools:prod
 
+      - name: Copy tools build to docs
+        run: |
+          mkdir -p docs
+          rsync -a --delete tools/dist/ docs/
+
       - name: Upload tools dist artifact
         uses: actions/upload-artifact@v4
         with:
